@@ -1,6 +1,6 @@
 function [state_VG] = set_cell_boundary(state_VG)
-%set_cell_boundary Summary of this function goes here
-%   Detailed explanation goes here
+%SET_CELL_BOUNDARY applies boundary conditions to the chosen grid.
+% 
 
 nG = Parameters.nG;
 iMin = Parameters.iMin;
@@ -42,6 +42,8 @@ switch Parameters.BC
       state_VG(:,iMin:iMax,jMin:jMax,kMax+1:kMaxAll) = ...
          state_VG(:,iMin:iMax,jMin:jMax,kMin:kMin+nG-1);
    case 'float'
+      % There might be some minor problem in implementing high order
+      % float boundary condition.
       state_VG(:,1:nG,jMin:jMax,kMin:kMax) = ...
          repmat(state_VG(:,iMin,jMin:jMax,kMin:kMax),[1 nG 1 1]);
       state_VG(:,iMin:iMax,1:nG,kMin:kMax) = ...
@@ -57,7 +59,6 @@ switch Parameters.BC
    otherwise
       error('unknown boundary type!')
 end
-      
       
 end
 

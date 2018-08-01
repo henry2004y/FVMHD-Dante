@@ -3,8 +3,8 @@ classdef Parameters
    %   General information includes:
    % GridType  Type of simulation grid. Options:
    %    (1) Cartesian  (2) Spherical
-   % GridSize  Size of simulation grid.
-   % nG        Number of ghost cells.
+   % GridSize  Size of simulation grid
+   % nG        Number of ghost cells
    
    properties (Constant)
       GridType   char = 'Cartesian'

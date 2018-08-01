@@ -1,5 +1,5 @@
 classdef FaceValue < handle
-   %FaceClass The face related variable class
+   %FaceValue Class of left and right state on the faces
    %   Detailed explanation goes here
    
    properties
@@ -13,8 +13,8 @@ classdef FaceValue < handle
    
    methods
       function obj = FaceValue
-         %FaceClass Construct an instance of this class
-         %   Detailed explanation goes here
+         %FaceValue Construct an instance of this class
+         %
          
 %          nVar = Parameters.nVar;
 %          GridSize = Parameters.GridSize;
@@ -35,17 +35,15 @@ classdef FaceValue < handle
          jMax = Parameters.jMax;
          kMin = Parameters.kMin;
          kMax = Parameters.kMax;
-         
-         
-         if Parameters.Order == 1
-         
+                
+         if Parameters.Order == 1 % 1st order
             obj.LState_VX = state_VG(:,iMin-1:iMax,jMin:jMax,kMin:kMax);
             obj.RState_VX = state_VG(:,iMin:iMax+1,jMin:jMax,kMin:kMax);
             obj.LState_VY = state_VG(:,iMin:iMax,jMin-1:jMax,kMin:kMax);
             obj.RState_VY = state_VG(:,iMin:iMax,jMin:jMax+1,kMin:kMax);
             obj.LState_VZ = state_VG(:,iMin:iMax,jMin:jMax,kMin-1:kMax);
             obj.RState_VZ = state_VG(:,iMin:iMax,jMin:jMax,kMin:kMax+1);
-         else
+         else % 2nd order
             % Compute and limit slopes
             %dq_X=zeros(Parameters.nVar,Parameters.nI+1);
 
@@ -60,23 +58,22 @@ classdef FaceValue < handle
                   dq_X = minmod(dqR_X,dqL_X);
             end
             
+            % Get the gradient of states
+            
+            % Linear interpolation onto edge centers (with limiters)
             
             
          end
          
       end
-   
-      function mm = minmod(v)
-         % Using Harten's generalized definition
-         % minmod: zero if opposite sign, otherwise the one of smaller magnitude.
-         %m=size(v,1); mm=zeros(size(v,2),1); s=sum(sign(v),2)/m; ids=find(abs(s)==1);
-         %if(~isempty(ids)); mm(ids)=s(ids).*min(abs(v(ids,:)),[],2); end
-         s = sum(sign(v))/numel(v);
-         if abs(s)==1; mm = s*min(abs(v(:))); else mm=0; end
-      end
       
       
       function [Flux_VX,Flux_VY,Flux_VZ] = get_physical_flux(obj)
+         % Calculate the physical fluxes
+         %INPUT:
+         %  FaceValue Class object
+         %OUTPUT:
+         %  Fluxes in 3 directions
          
          nVar = Parameters.nVar;
          GridSize = Parameters.GridSize;
@@ -325,6 +322,13 @@ classdef FaceValue < handle
       
       function [Flux_VX,Flux_VY,Flux_VZ] = add_numerical_flux(obj,...
             Flux_VX,Flux_VY,Flux_VZ)
+         % Calculate numerical fluxes and add to the physical fluxes.
+         %INPUTS:
+         % FaceValue class object
+         % physical face fluxes in 3 directions
+         %OUTPUTS:
+         % total face fluxes in 3 directions
+         
          if Parameters.Scheme == 'Rusanov'
             
             [cmax_XF,cmax_YF,cmax_ZF] = obj.get_speed_max;
@@ -332,9 +336,7 @@ classdef FaceValue < handle
             if ~Parameters.UseConservative
                Flux_VX = Flux_VX - 0.5*cmax_XF.*(obj.RState_VX - obj.LState_VX);
                Flux_VY = Flux_VY - 0.5*cmax_YF.*(obj.RState_VY - obj.LState_VY);
-               Flux_VZ = Flux_VZ - 0.5*cmax_ZF.*(obj.RState_VZ - obj.LState_VZ);
-            
-               
+               Flux_VZ = Flux_VZ - 0.5*cmax_ZF.*(obj.RState_VZ - obj.LState_VZ);       
             else
             % If I solve energy equation instead of pressure, there's
             % duplicate calculation above, even though the expression looks
@@ -392,16 +394,25 @@ classdef FaceValue < handle
             
          end
       end
+        
+   end
+   
+   methods (Access = private)
+      function mm = minmod(v)
+         % Using Harten's generalized definition
+         % minmod: zero if opposite sign, otherwise the one of smaller magnitude.
+         %m=size(v,1); mm=zeros(size(v,2),1); s=sum(sign(v),2)/m; ids=find(abs(s)==1);
+         %if(~isempty(ids)); mm(ids)=s(ids).*min(abs(v(ids,:)),[],2); end
+         s = sum(sign(v))/numel(v);
+         if abs(s)==1; mm = s*min(abs(v(:))); else mm=0; end
+      end
       
       function [cmax_XF,cmax_YF,cmax_ZF] = get_speed_max(obj)
          gamma = Const.gamma;
          
-         LState_VX = obj.LState_VX;
-         RState_VX = obj.RState_VX;
-         LState_VY = obj.LState_VY;
-         RState_VY = obj.RState_VY;
-         LState_VZ = obj.LState_VZ;
-         RState_VZ = obj.RState_VZ;
+         LS_VX = obj.LState_VX; RS_VX = obj.RState_VX;
+         LS_VY = obj.LState_VY; RS_VY = obj.RState_VY;
+         LS_VZ = obj.LState_VZ; RS_VZ = obj.RState_VZ;
          
          Rho_ = Parameters.Rho_;
          Ux_  = Parameters.Ux_;
@@ -411,60 +422,57 @@ classdef FaceValue < handle
          By_  = Parameters.By_;
          Bz_  = Parameters.Bz_;
          P_   = Parameters.P_;
-         U_   = Parameters.U_;
-         B_   = Parameters.B_;
+         %U_   = Parameters.U_;
+         %B_   = Parameters.B_;
          
          % Maybe use this for speed?
          %rho_VX = LState_VX(Rho_,:,:,:) + RState_VX(Rho_,:,:,:);
          
-         Cs2_XF = gamma*(LState_VX(P_,:,:,:) + RState_VX(P_,:,:,:)) ./...
-            (LState_VX(Rho_,:,:,:) + RState_VX(Rho_,:,:,:));
-         Cs2_YF = gamma*(LState_VY(P_,:,:,:) + RState_VY(P_,:,:,:)) ./...
-            (LState_VY(Rho_,:,:,:) + RState_VY(Rho_,:,:,:));
-         Cs2_ZF = gamma*(LState_VZ(P_,:,:,:) + RState_VZ(P_,:,:,:)) ./...
-            (LState_VZ(Rho_,:,:,:) + RState_VZ(Rho_,:,:,:));
+         Cs2_XF = gamma*(LS_VX(P_,:,:,:) + RS_VX(P_,:,:,:)) ./...
+            (LS_VX(Rho_,:,:,:) + RS_VX(Rho_,:,:,:));
+         Cs2_YF = gamma*(LS_VY(P_,:,:,:) + RS_VY(P_,:,:,:)) ./...
+            (LS_VY(Rho_,:,:,:) + RS_VY(Rho_,:,:,:));
+         Cs2_ZF = gamma*(LS_VZ(P_,:,:,:) + RS_VZ(P_,:,:,:)) ./...
+            (LS_VZ(Rho_,:,:,:) + RS_VZ(Rho_,:,:,:));
          
-         Ca2_XF = ( (LState_VX(Bx_,:,:,:) + RState_VX(Bx_,:,:,:)).^2 + ...
-            (LState_VX(By_,:,:,:) + RState_VX(By_,:,:,:)).^2 + ...
-            (LState_VX(Bz_,:,:,:) + RState_VX(Bz_,:,:,:)).^2 ) ./ ...
-            (2 * LState_VX(Rho_,:,:,:) + RState_VX(Rho_,:,:,:));
-         Ca2_YF = ( (LState_VY(Bx_,:,:,:) + RState_VY(Bx_,:,:,:)).^2 + ...
-            (LState_VY(By_,:,:,:) + RState_VY(By_,:,:,:)).^2 + ...
-            (LState_VY(Bz_,:,:,:) + RState_VY(Bz_,:,:,:)).^2 ) ./ ...
-            (2 * LState_VY(Rho_,:,:,:) + RState_VY(Rho_,:,:,:));
-         Ca2_ZF = ( (LState_VZ(Bx_,:,:,:) + RState_VZ(Bx_,:,:,:)).^2 + ...
-            (LState_VZ(By_,:,:,:) + RState_VZ(By_,:,:,:)).^2 + ...
-            (LState_VZ(Bz_,:,:,:) + RState_VZ(Bz_,:,:,:)).^2 ) ./ ...
-            (2 * LState_VZ(Rho_,:,:,:) + RState_VZ(Rho_,:,:,:));
+         Ca2_XF = ( (LS_VX(Bx_,:,:,:) + RS_VX(Bx_,:,:,:)).^2 + ...
+            (LS_VX(By_,:,:,:) + RS_VX(By_,:,:,:)).^2 + ...
+            (LS_VX(Bz_,:,:,:) + RS_VX(Bz_,:,:,:)).^2 ) ./ ...
+            (2 * LS_VX(Rho_,:,:,:) + RS_VX(Rho_,:,:,:));
+         Ca2_YF = ( (LS_VY(Bx_,:,:,:) + RS_VY(Bx_,:,:,:)).^2 + ...
+            (LS_VY(By_,:,:,:) + RS_VY(By_,:,:,:)).^2 + ...
+            (LS_VY(Bz_,:,:,:) + RS_VY(Bz_,:,:,:)).^2 ) ./ ...
+            (2 * LS_VY(Rho_,:,:,:) + RS_VY(Rho_,:,:,:));
+         Ca2_ZF = ( (LS_VZ(Bx_,:,:,:) + RS_VZ(Bx_,:,:,:)).^2 + ...
+            (LS_VZ(By_,:,:,:) + RS_VZ(By_,:,:,:)).^2 + ...
+            (LS_VZ(Bz_,:,:,:) + RS_VZ(Bz_,:,:,:)).^2 ) ./ ...
+            (2 * LS_VZ(Rho_,:,:,:) + RS_VZ(Rho_,:,:,:));
          
-         Can2_XF = ( (LState_VX(Bx_,:,:,:) + RState_VX(Bx_,:,:,:)).^2 ) ./ ...
-            (2 * LState_VX(Rho_,:,:,:) + RState_VX(Rho_,:,:,:));
-         Can2_YF = ( (LState_VY(By_,:,:,:) + RState_VY(By_,:,:,:)).^2 ) ./ ...
-            (2 * LState_VY(Rho_,:,:,:) + RState_VY(Rho_,:,:,:));
-         Can2_ZF = ( (LState_VZ(Bz_,:,:,:) + RState_VZ(Bz_,:,:,:)).^2 ) ./ ...
-            (2 * LState_VZ(Rho_,:,:,:) + RState_VZ(Rho_,:,:,:));
-         
-         %Cf2 = Cs2 + Ca2;
+         Can2_XF = ( (LS_VX(Bx_,:,:,:) + RS_VX(Bx_,:,:,:)).^2 ) ./ ...
+            (2 * LS_VX(Rho_,:,:,:) + RS_VX(Rho_,:,:,:));
+         Can2_YF = ( (LS_VY(By_,:,:,:) + RS_VY(By_,:,:,:)).^2 ) ./ ...
+            (2 * LS_VY(Rho_,:,:,:) + RS_VY(Rho_,:,:,:));
+         Can2_ZF = ( (LS_VZ(Bz_,:,:,:) + RS_VZ(Bz_,:,:,:)).^2 ) ./ ...
+            (2 * LS_VZ(Rho_,:,:,:) + RS_VZ(Rho_,:,:,:));
          
          cmax_XF = ...
-            0.5 * abs(LState_VX(Ux_,:,:,:)./LState_VX(Rho_,:,:,:) + ...
-            RState_VX(Ux_,:,:,:)./RState_VX(Rho_,:,:,:)) + ...
+            0.5 * abs(LS_VX(Ux_,:,:,:)./LS_VX(Rho_,:,:,:) + ...
+            RS_VX(Ux_,:,:,:)./RS_VX(Rho_,:,:,:)) + ...
             sqrt( 0.5*(Cs2_XF + Ca2_XF + ...
             sqrt((Cs2_XF + Ca2_XF).^2-4*Cs2_XF.*Can2_XF)) );
          
          cmax_YF = ...
-            0.5 * abs(LState_VY(Uy_,:,:,:)./LState_VY(Rho_,:,:,:) + ...
-            RState_VY(Uy_,:,:,:)./RState_VY(Rho_,:,:,:)) + ...
+            0.5 * abs(LS_VY(Uy_,:,:,:)./LS_VY(Rho_,:,:,:) + ...
+            RS_VY(Uy_,:,:,:)./RS_VY(Rho_,:,:,:)) + ...
             sqrt( 0.5*(Cs2_YF + Ca2_YF + ...
             sqrt((Cs2_YF + Ca2_YF).^2-4*Cs2_YF.*Can2_YF)) );
          
          cmax_ZF = ...
-            0.5 * abs(LState_VZ(Uz_,:,:,:)./LState_VZ(Rho_,:,:,:) + ...
-            RState_VZ(Uz_,:,:,:)./RState_VZ(Rho_,:,:,:)) + ...
+            0.5 * abs(LS_VZ(Uz_,:,:,:)./LS_VZ(Rho_,:,:,:) + ...
+            RS_VZ(Uz_,:,:,:)./RS_VZ(Rho_,:,:,:)) + ...
             sqrt( 0.5*(Cs2_ZF + Ca2_ZF + ...
             sqrt((Cs2_ZF + Ca2_ZF).^2-4*Cs2_ZF.*Can2_ZF)) );
-         
-      end
+      end   
       
    end
    

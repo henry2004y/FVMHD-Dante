@@ -1,6 +1,6 @@
 classdef FaceFlux < handle
-   %FaceClass The face flux variable class
-   %   Detailed explanation goes here
+   %FaceFlux Class of fluxes
+   %
    
    properties
       Flux_VX(:,:,:,:)  double {mustBeReal}
@@ -10,8 +10,8 @@ classdef FaceFlux < handle
    
    methods
       function obj = FaceFlux
-         %FaceClass Construct an instance of this class
-         %   Detailed explanation goes here
+         %FACEFLUX Construct an instance of this class
+         %
          
          nVar = Parameters.nVar;
          GridSize = Parameters.GridSize;
@@ -22,21 +22,15 @@ classdef FaceFlux < handle
       end
       
       function obj = calc_face_flux(obj,faceValue)
-                  
-         if Parameters.Order == 1
+         % Calculate the face fluxes in generalized coordinates from face 
+         % values on the left and right of the face     
          
-            [obj.Flux_VX, obj.Flux_VY, obj.Flux_VZ] = ...
-               faceValue.get_physical_flux;
-            
-            %obj.Flux_VX(8,1:5)
-            
-            [obj.Flux_VX, obj.Flux_VY, obj.Flux_VZ] = ...
-               faceValue.add_numerical_flux(...
-               obj.Flux_VX,obj.Flux_VY,obj.Flux_VZ);
+         [obj.Flux_VX, obj.Flux_VY, obj.Flux_VZ] = ...
+            faceValue.get_physical_flux;
          
-            %obj.Flux_VX(8,1:5)
-         
-         end
+         [obj.Flux_VX, obj.Flux_VY, obj.Flux_VZ] = ...
+            faceValue.add_numerical_flux(...
+            obj.Flux_VX,obj.Flux_VY,obj.Flux_VZ);
       end
       
    end

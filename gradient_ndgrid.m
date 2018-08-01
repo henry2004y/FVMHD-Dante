@@ -1,6 +1,6 @@
 function varargout = gradient_ndgrid(varargin)
-%GRADIENT_NDGRID Summary of this function goes here
-%   Detailed explanation goes here
+%GRADIENT_NDGRID Gradient of vector
+%   Not currently used or fully tested! Be careful!
 
 narginchk(4,4);
 f = varargin{1};
