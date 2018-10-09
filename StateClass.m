@@ -1,4 +1,4 @@
-classdef StateClass
+classdef StateClass < handle
    %State The class of physical states in MHD
    %   Primitive variables include:
    % rho: density
