@@ -34,7 +34,7 @@ state.plot('rho',0)
 
 % Init intermediate variables
 faceValue = FaceValue;
-faceFlux  = FaceFlux; 
+faceFlux  = FaceFlux(faceValue);
 
 clearvars density velocity Bfield pressure
 
@@ -64,7 +64,7 @@ while t < tEnd % 1st order method
    faceValue = faceValue.calc_face_value(state_VG);
    
    % Calculate face flux
-   faceFlux = faceFlux.calc_face_flux(faceValue);
+   faceFlux = faceFlux.calc_face_flux;
    
    % Calculate source
    source_VG = calc_source(grid,state_VG);
