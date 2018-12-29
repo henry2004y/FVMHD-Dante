@@ -1,5 +1,5 @@
 classdef FaceValue < handle
-   %FaceValue Class of left and right state on the faces
+   %FaceValue Class of left and right state on the faces.
    % This class holds all data and operations pertinent to the face values.
    
    %======================== MEMBERS =================================
@@ -17,16 +17,6 @@ classdef FaceValue < handle
       function obj = FaceValue
          %FaceValue Construct an instance of this class
          %
-         
-%          nVar = Parameters.nVar;
-%          GridSize = Parameters.GridSize;
-%          
-%          obj.LState_VX = Inf([nVar,GridSize+1]);
-%          obj.RState_VX = Inf([nVar,GridSize+1]);
-%          obj.LState_VY = Inf([nVar,GridSize+1]);
-%          obj.RState_VY = Inf([nVar,GridSize+1]);
-%          obj.LState_VZ = Inf([nVar,GridSize+1]);
-%          obj.RState_VZ = Inf([nVar,GridSize+1]);
       end
    end
    
@@ -57,8 +47,12 @@ classdef FaceValue < handle
                   
                case 'MM' % Minmod limiter
                   % Find dq_j = minmod{fwd diff, bwd diff}                  
-                  dqR_X = squeeze(state_VG(:,iMin+1:iMax+2,jMin:jMax,kMin:kMax) - state_VG(:,iMin:iMax+1,jMin:jMax,kMin:kMax));
-                  dqL_X = squeeze(state_VG(:,iMin:iMax+1,jMin:jMax,kMin:kMax) - state_VG(:,iMin-1:iMax,jMin:jMax,kMin:kMax));
+                  dqR_X = squeeze(...
+                     state_VG(:,iMin+1:iMax+2,jMin:jMax,kMin:kMax) -...
+                     state_VG(:,iMin:iMax+1,jMin:jMax,kMin:kMax));
+                  dqL_X = squeeze(...
+                     state_VG(:,iMin:iMax+1,jMin:jMax,kMin:kMax) - ...
+                     state_VG(:,iMin-1:iMax,jMin:jMax,kMin:kMax));
                   
                   dq_X = minmod(dqR_X,dqL_X);
             end
