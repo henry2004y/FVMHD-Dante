@@ -58,7 +58,7 @@ classdef Parameters
       RiemannProblemType double {mustBeInteger} = 1;
       
       nStep      double {mustBeInteger} = 100
-      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 1.0
+      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 0.1
    end
    
 end
