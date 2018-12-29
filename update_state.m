@@ -1,8 +1,19 @@
-function [stateNew_VG] = update_state(grid,state_VG,faceFlux,source_VG,dt)
-%update_state Summary of this function goes here
-%   Detailed explanation goes here
+function [stateNew_VG] = update_state(grid,state_VG,faceFlux,source,dt)
+%UPDATE_STATE Update the state variables in one timestep
+%
+%INPUTS:
+% grid:     class of grid
+% state_VG: state variables
+% faceFlux: class of fluxes
+% source:   class of sources
+% dt:       timestep
+%OUTPUTS:
+% stateNew_VG: updated states
+%
+% Hongyang Zhou, hyzhou@umich.edu 
 
 stateNew_VG = state_VG;
+source_VG   = source.source_VG;
 
 CellSize_D = grid.CellSize_D;
 
@@ -23,7 +34,7 @@ Flux_VX = faceFlux.Flux_VX;
 Flux_VY = faceFlux.Flux_VY;
 Flux_VZ = faceFlux.Flux_VZ;
 
-if Parameters.GridType == 'Cartesian'
+if strcmp(Parameters.GridType,'Cartesian')
    % no need for volume and face
   
    if ~Parameters.UseConservative
@@ -68,16 +79,6 @@ if Parameters.GridType == 'Cartesian'
          sum(stateNew_VG(U_,iMin:iMax,jMin:jMax,kMin:kMax).^2,1) - ...
          0.5*sum(stateNew_VG(B_,iMin:iMax,jMin:jMax,kMin:kMax),1) );
    end
-
-%       fprintf('fluxDiff=%12.5f\n',faceFlux.Flux_VX(:,2:end,:,:) - ...
-%          faceFlux.Flux_VX(:,1:end-1,:,:))
-   
-%       dt.*(faceFlux.Flux_VX(:,2:end,:,:) - ...
-%          faceFlux.Flux_VX(:,1:end-1,:,:))/CellSize_D(1)
-   
-%    stateNew_VG(:,iMin:iMax,jMin:jMax,kMin:kMax) = ...
-%       state_VG(:,iMin:iMax,jMin:jMax,kMin:kMax) - DeltaState_VG;
-
 else
    % need volume and face
    stateNew_VG = 0;
