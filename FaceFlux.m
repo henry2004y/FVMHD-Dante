@@ -298,7 +298,7 @@ classdef FaceFlux < handle
          LState_VZ = obj.faceValue.LState_VZ;
          RState_VZ = obj.faceValue.RState_VZ;
          
-         if Parameters.Scheme == 'Rusanov'
+         if strcmp(Parameters.Scheme,'Rusanov')
             
             [cmax_XF,cmax_YF,cmax_ZF] = obj.get_speed_max;
             
