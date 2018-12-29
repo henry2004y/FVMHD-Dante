@@ -25,7 +25,7 @@ grid = Grid;
 [density,velocity,Bfield,pressure] = set_init;
 %[density,velocity,Bfield,pressure,tEnd] = set_init_Riemann(grid);
 
-state = StateClass(density,velocity,Bfield,pressure);
+state = State(density,velocity,Bfield,pressure);
 
 state_VG = state.SetState;
 
@@ -35,6 +35,7 @@ state.plot('rho',0)
 % Init intermediate variables
 faceValue = FaceValue;
 faceFlux  = FaceFlux(faceValue);
+source    = Source;
 
 clearvars density velocity Bfield pressure
 
@@ -67,14 +68,14 @@ while t < tEnd % 1st order method
    faceFlux = faceFlux.calc_face_flux;
    
    % Calculate source
-   source_VG = calc_source(grid,state_VG);
+   source.calc_source(grid,state_VG);
    
    % Calculate time step
    dt = calc_timestep(grid,state_VG);
    if t+dt>tEnd; dt=tEnd-t; end
       
    % Update state
-   state_VG = update_state(grid,state_VG,faceFlux,source_VG,dt); 
+   state_VG = update_state(grid,state_VG,faceFlux,source,dt); 
    
    t = t + dt;
    it = it + 1;
@@ -101,13 +102,13 @@ while t < tEnd % 2nd order method
    faceFlux = faceFlux.calc_face_flux(faceValue);
    
    % Calculate source
-   source_VG = calc_source(grid,state_VG);
+   source.calc_source(grid,state_VG);
    
    % Calculate time step
    dt = calc_timestep(grid,state_VG);
    if t+dt>tEnd; dt=tEnd-t; end
    
-   state1_VG = update_state(grid,state_VG,faceFlux,source_VG,0.5*dt);
+   state1_VG = update_state(grid,state_VG,faceFlux,source,0.5*dt);
    
    % 2nd stage of modified timestepping
    
