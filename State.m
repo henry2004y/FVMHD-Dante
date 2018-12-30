@@ -10,8 +10,8 @@ classdef State < handle
    %======================== MEMBERS =================================
    properties
       Rho(:,:,:)  double {mustBeReal, mustBeGreaterThan(Rho, 0)}
-      U(3,:,:,:)  double {mustBeReal}
-      B(3,:,:,:)  double {mustBeReal}
+      U(:,:,:,3)  double {mustBeReal}
+      B(:,:,:,3)  double {mustBeReal}
       P(:,:,:)    double {mustBeReal, mustBeGreaterThan(P, 0)}
    end
    
@@ -22,48 +22,242 @@ classdef State < handle
    
    %======================== CONSTRUCTORS ============================
    methods
-      function obj = State(density,velocity,Bfield,pressure)
+      function obj = State(UseDefault,grid)
          % Construct an instance of this class
          %
          
-         disp('Creating state variables...')
+         disp('Initializing state variables...')
+         
+         % Set initial conditions
+         [density,velocity,Bfield,pressure] = obj.set_init;
+         %[density,velocity,Bfield,pressure,tEnd] = set_init_Riemann(grid);
          
          if nargin == 0
             disp('Using default grid')
             obj.Rho = ones(GridGen.GridSize);
             % May be I don't need initialization this way.
+         elseif ~UseDefault
+            % Call asset constructor
+            obj.Rho = density;
+            obj.U   = velocity;
+            obj.B   = Bfield;
+            obj.P   = pressure;
          end
-         % Call asset constructor
-         obj.Rho = density;
-         obj.U   = velocity;
-         obj.B   = Bfield;
-         obj.P   = pressure;
+      end
+   end
+   
+   methods (Static)
+      function [density,velocity,Bfield,pressure] = set_init
+         %SET_INIT Initialization of state variables.
+         %
+         
+         density  = ones(Parameters.FullSize);
+         velocity = zeros([Parameters.FullSize,3]);
+         Bfield   = zeros([Parameters.FullSize,3]);
+         pressure = ones(Parameters.FullSize);
+         
+         nI = Parameters.nI;
+         
+         switch Parameters.IC
+            case 'contact discontinuity'
+               velocity(:,:,:,:) = 0.0;
+               density(1:nI/2,:,:) = 2.0;
+               density(nI/2+1:end,:,:) = 1.0;
+            case 'density wave'
+               density(nI/2:nI/2,:,:) = 2.0;
+               velocity(:,:,:,1) = 1.0;
+            case 'shocktube'
+               
+            otherwise
+               error('unknown initial condition type!')
+         end
+      end
+      
+      function [Rho,U,B,P,tEnd] = set_init_Riemann(grid)
+         %SET_INIT_RIEMANN Load the IC of a classical 1D Riemann Problems.
+         %   Detailed explanation goes here
+         
+
+         % Riemann Problems
+         switch Parameters.RiemannProblemType
+            case{1} % Configuration 1, Sod's Problem
+               fprintf('Case 1: Sods problem \n');
+               p   = [1    0.1  ];
+               u   = [0    0    ];
+               rho = [1    0.125];
+               tEnd = 0.1; cfl = 0.90;
+               
+            case{2} % Configuration 2, Left Expansion and right strong shock
+               fprintf('Case 2: Left Expansion and right strong shock \n');
+               p   = [1000 0.1  ];
+               u   = [0    0    ];
+               rho = [3    2    ];
+               tEnd = 0.02; cfl = 0.90;
+               
+            case{3} % Configuration 3, Right Expansion and left strong shock
+               fprintf('Case 3: Right Expansion and left strong shock \n');
+               p   = [7    10   ];
+               u   = [0    0    ];
+               rho = [1    1    ];
+               tEnd = 0.1; cfl = 0.90;
+               
+            case{4} % Configuration 4, Double Shock
+               fprintf('Case 4: Double Shock \n');
+               p   = [450  45   ];
+               u   = [20   -6   ];
+               rho = [6    6    ];
+               tEnd = 0.02; cfl = 0.90;
+               
+            case{5} % Configuration 5, Double Expansion
+               fprintf('Case 5: Double Expansion \n');
+               p   = [40   40   ];
+               u   = [-2   2    ];
+               rho = [1    2.5  ];
+               tEnd = 0.03; cfl = 0.90;
+               
+            case{6} % Configuration 6, Cavitation
+               fprintf('Case 6: Cavitation \n');
+               p   = [0.4  0.4  ];
+               u   = [-2    2   ];
+               rho = [ 1    1   ];
+               tEnd = 0.1; cfl = 0.90;
+               
+            case{7} % Shocktube problem of G.A. Sod, JCP 27:1, 1978
+               fprintf('Shocktube problem of G.A. Sod, JCP 27:1, 1978');
+               p   = [1.0  0.1  ];
+               u   = [0.75 0    ];
+               rho = [1    0.125];
+               tEnd = 0.17; cfl = 0.90;
+               
+            case{8} % Lax test case: M. Arora and P.L. Roe: JCP 132:3-11, 1997
+               fprintf('Lax test case: M. Arora and P.L. Roe: JCP 132:3-11, 1997');
+               p   = [3.528 0.571];
+               u   = [0.698 0    ];
+               rho = [0.445 0.5  ];
+               tEnd = 0.15; cfl = 0.90;
+               
+            case{9} % Mach = 3 test case: M. Arora and P.L. Roe: JCP 132:3-11, 1997
+               fprintf('Mach = 3 test case: M. Arora and P.L. Roe: JCP 132:3-11, 1997');
+               p   = [10.333  1  ];
+               u   = [ 0.92  3.55];
+               rho = [ 3.857  1  ];
+               tEnd = 0.09; cfl = 0.90;
+               
+            case{10} % Shocktube problem with supersonic zone
+               fprintf('Shocktube problem with supersonic zone');
+               p   = [1  0.02];
+               u   = [0  0.00];
+               rho = [1  0.02];
+               tEnd = 0.162; cfl = 0.90;
+               
+            case{11} % Contact discontinuity
+               fprintf('Contact discontinuity');
+               p   = [0.5 0.5];
+               u   = [0.0 0.0];
+               rho = [1.0 0.6];
+               tEnd = 1; cfl = 0.90;
+               
+            case{12} % Stationary shock
+               fprintf('Stationary shock');
+               p   = [ 1.0  0.1 ];
+               u   = [-2.0 -2.0 ];
+               rho = [ 1.0 0.125];
+               tEnd = 0.1; cfl = 0.28;
+               
+            case{13} % left side of 2-d Riemman case 12
+               fprintf('left side of 2-d Riemman case 13');
+               p   = [ 1.0  1.0 ];
+               u   = [ 0.0  0.0 ];
+               rho = [ 0.8  1.0 ];
+               tEnd = 0.1; cfl = 0.25;
+               
+            case{14} % right side of 2-d Riemman case 12
+               fprintf('right side of 2-d Riemman case 14');
+               p   = [ 1.0  0.4 ];
+               u   = [ 0.7276  0.0 ];
+               rho = [ 1.0  0.5313 ];
+               tEnd = 0.1; cfl = 0.25;
+               
+            case{15} % Stationary Shock
+               fprintf('right side of 2-d Riemman case 15');
+               p   = [ 0.1  0.676 ];
+               u   = [ 1.2  0.723966942148760 ];
+               rho = [ 1.0  1.657534246575342 ];
+               tEnd = 0.1; cfl = 0.25;
+               
+            otherwise
+               error('Case not available');
+               
+         end
+         % Print for Riemann Problems
+         fprintf('\n');
+         fprintf('density (L): %1.3f\n',rho(1));
+         fprintf('velocity(L): %1.3f\n',u(1));
+         fprintf('Presure (L): %1.3f\n',p(1));
+         fprintf('\n');
+         fprintf('density (R): %1.3f\n',rho(2));
+         fprintf('velocity(R): %1.3f\n',u(2));
+         fprintf('Presure (R): %1.3f\n',p(2));
+         fprintf('\n');
+         
+         % Load Selected case Initial condition:
+         % Pre-Allocate variables
+         Rho = ones(Parameters.FullSize);
+         U   = zeros([Parameters.FullSize,3]);
+         B   = zeros([Parameters.FullSize,3]);
+         P   = ones(Parameters.FullSize);
+         
+         % Parameters of regions dimensions
+         x_middle = 0.5*...
+            (Parameters.xyzMinMax(1,2) - Parameters.xyzMinMax(1,1));
+         L = find(grid.X<=x_middle);
+         R = find(grid.X>x_middle);
+         
+         % Initial Condition for our 1D domain
+         % Density
+         Rho(L) = rho(1); % region 1
+         Rho(R) = rho(2); % region 2
+         % Velocity in x
+         U(L) = u(1); % region 1
+         U(R) = u(2); % region 2
+         % Pressure
+         P(L) = p(1); % region 1
+         P(R) = p(2); % region 2
          
       end
+
    end
    
    %======================== METHODS =================================
    methods
-      function state_VG = SetState(obj)
-         % Reorganize data structure for efficiency
-         state_VG = Inf([Parameters.nVar,Parameters.FullSize]);
+      function state_GV = SetState(obj)
+         % Reorganize data structure.
+         %          state_VG = Inf([Parameters.nVar,Parameters.FullSize]);
+         %
+         %          state_VG(Parameters.Rho_,:,:,:) = obj.Rho;
+         %          state_VG(Parameters.U_,:,:,:) = obj.U .*...
+         %             state_VG(Parameters.Rho_,:,:,:);
+         %          state_VG(Parameters.B_,:,:,:) = obj.B;
+         %          state_VG(Parameters.P_,:,:,:) = obj.P;
          
-         state_VG(Parameters.Rho_,:,:,:) = obj.Rho;
-         state_VG(Parameters.U_,:,:,:) = obj.U .*...
-            state_VG(Parameters.Rho_,:,:,:);
-         state_VG(Parameters.B_,:,:,:) = obj.B;
-         state_VG(Parameters.P_,:,:,:) = obj.P;
+         state_GV = Inf([Parameters.FullSize,Parameters.nVar]);
+         
+         state_GV(:,:,:,Parameters.Rho_) = obj.Rho;
+         state_GV(:,:,:,Parameters.U_)   = obj.U .*...
+            state_GV(:,:,:,Parameters.Rho_);
+         state_GV(:,:,:,Parameters.B_) = obj.B;
+         state_GV(:,:,:,Parameters.P_) = obj.P;
          
       end
       
-      function obj = GetState(obj,state_VG)
-         % Reorganize data structure for post-processing
+      function obj = GetState(obj,state_GV)
+         % Reorganize data structure for post-processing.
          
-         obj.Rho = state_VG(Parameters.Rho_,:,:,:);
-         obj.U   = state_VG(Parameters.U_,:,:,:) ./...
-            state_VG(Parameters.Rho_,:,:,:);
-         obj.B   = state_VG(Parameters.B_,:,:,:);
-         obj.P   = state_VG(Parameters.P_,:,:,:);
+         obj.Rho = state_GV(:,:,:,Parameters.Rho_);
+         obj.U   = state_GV(:,:,:,Parameters.U_) ./...
+            state_GV(:,:,:,Parameters.Rho_);
+         obj.B   = state_GV(:,:,:,Parameters.B_);
+         obj.P   = state_GV(:,:,:,Parameters.P_);
          
       end
       
@@ -71,7 +265,7 @@ classdef State < handle
          %GET.ENERGY Calculate the energy in each cell
          
          obj.Energy = obj.P / (Const.gamma-1) + ...
-            0.5*obj.Rho.*sum(obj.U.^2,1) + 0.5*sum(obj.B.^2,1);
+            0.5*obj.Rho.*sum(obj.U.^2,4) + 0.5*sum(obj.B.^2,4);
       end
       
       function plot(obj,varargin)
@@ -90,7 +284,7 @@ classdef State < handle
             case 'rho'
                y = obj.Rho;
             case 'ux'
-               y = obj.U(1,:,:,:);
+               y = obj.U(:,:,:,1);
             otherwise
                error('unknown plotting varname!')
          end
@@ -110,4 +304,3 @@ classdef State < handle
       
    end
 end
-

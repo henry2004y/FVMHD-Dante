@@ -4,12 +4,12 @@ classdef Source < handle
    
    %======================== MEMBERS =================================
    properties
-      source_VG(:,:,:,:) double {mustBeReal}
+      source_GV(:,:,:,:) double {mustBeReal}
    end
    
    %======================== METHODS =================================
    methods
-      function calc_source(obj,grid,state_VG)
+      function calc_source(obj,grid,state_GV)
          %CALC_SOURCE Calculate all the source terms.
          %
          
@@ -31,36 +31,38 @@ classdef Source < handle
          kMax = Parameters.kMax;
          
          % Calculate divergence of B using central difference
-         DivB = divergence_ndgrid(grid.X,grid.Y,grid.Z,state_VG(B_,:,:,:));
+         DivB = divergence_ndgrid(grid.X,grid.Y,grid.Z,state_GV(:,:,:,B_));
          % Add a singleton dimension for the sake of matrix operation later
-         DivB = reshape(DivB,[1 size(DivB)]);
+         %note: maybe this is not needed if I change the sequence!
+         %DivB = reshape(DivB,[1 size(DivB)]);
          
          DivU = divergence_ndgrid(grid.X,grid.Y,grid.Z,...
-            state_VG(U_,:,:,:)./state_VG(Rho_,:,:,:));
+            state_GV(:,:,:,U_)./state_GV(:,:,:,Rho_));
          % Add a singleton dimension for the sake of matrix operation later
-         DivU = reshape(DivU,[1 size(DivU)]);
+         % 
+         %DivU = reshape(DivU,[size(DivU) 1]);
          
-         obj.source_VG = Inf([nVar GridSize]);
+         obj.source_GV = Inf([GridSize nVar]);
          
          if Parameters.Order == 1
-            obj.source_VG(Rho_,:,:,:) = 0;
-            obj.source_VG(U_,:,:,:) = ...
-               -state_VG(B_,iMin:iMax,jMin:jMax,kMin:kMax).*...
-               DivB(1,iMin:iMax,jMin:jMax,kMin:kMax);
+            obj.source_GV(:,:,:,Rho_) = 0;
+            obj.source_GV(:,:,:,U_) = ...
+               -state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_).*...
+               DivB(iMin:iMax,jMin:jMax,kMin:kMax);
             
-            obj.source_VG(B_,:,:,:) = ...
-               state_VG(U_,iMin:iMax,jMin:jMax,kMin:kMax).*...
-               DivB(1,iMin:iMax,jMin:jMax,kMin:kMax);
+            obj.source_GV(:,:,:,B_) = ...
+               state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_).*...
+               DivB(iMin:iMax,jMin:jMax,kMin:kMax);
             
             if ~Parameters.UseConservative
-               obj.source_VG(P_,:,:,:) = -(gamma-1) * ...
-                  state_VG(P_,iMin:iMax,jMin:jMax,kMin:kMax).*...
-                  DivU(1,iMin:iMax,jMin:jMax,kMin:kMax);
+               obj.source_GV(:,:,:,P_) = -(gamma-1) * ...
+                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,P_).*...
+                  DivU(iMin:iMax,jMin:jMax,kMin:kMax);
             else
-               obj.source_VG(E_,:,:,:) = ...
-                  -sum(state_VG(U_,iMin:iMax,jMin:jMax,kMin:kMax) .*...
-                  state_VG(B_,iMin:iMax,jMin:jMax,kMin:kMax),1) .* ...
-                  DivB(1,iMin:iMax,jMin:jMax,kMin:kMax);
+               obj.source_GV(:,:,:,E_) = ...
+                  -sum(state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_) .*...
+                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_),4) .* ...
+                  DivB(iMin:iMax,jMin:jMax,kMin:kMax);
             end
             
          elseif Parameters.Order == 2

@@ -27,7 +27,7 @@ hz = z(1,1,:);
 %    g(n,:) = (f(n,:) - f(n-1,:))/(h(end)-h(end-1));
 % end
 
-siz = size(var); siz = siz(2:end);
+siz = size(var); siz = siz(1:end-1);
 
 px = zeros(siz,class(var));
 qy = zeros(siz,class(var));
@@ -37,19 +37,19 @@ n = size(hx,1);
 % Right now do nothing for the ghost cells; maybe needed later!
 % Take central differences on interior points
 if n > 2
-   px(2:n-1,:) = (squeeze(var(1,3:n,:)-var(1,1:n-2,:))) ./ ...
+   px(2:n-1,:,:) = (squeeze(var(3:n,:,:,1)-var(1:n-2,:,:,1))) ./ ...
       (hx(3:n) - hx(1:n-2));
 end
 
 n = size(hy,2);
 if n > 2
-   qy(:,2:n-1,:) = (squeeze(var(2,:,3:n,:)-var(2,:,1:n-2,:))) ./ ...
+   qy(:,2:n-1,:) = (squeeze(var(:,3:n,:,2)-var(:,1:n-2,:,2))) ./ ...
       (hy(3:n) - hy(1:n-2));
 end
 
 n = size(hz,3);
 if n > 2
-   rz(:,:,2:n-1) = (squeeze(var(3,:,:,3:n)-var(3,:,:,1:n-2))) ./ ...
+   rz(:,:,2:n-1) = (squeeze(var(:,:,3:n,3)-var(:,:,1:n-2,3))) ./ ...
       (hz(3:n) - hz(1:n-2));
 end
 

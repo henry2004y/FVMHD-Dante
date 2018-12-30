@@ -1,11 +1,11 @@
-function [timestep] = calc_timestep(grid,state_VG)
+function [timestep] = calc_timestep(grid,state_GV)
 %calc_timestep Summary of this function goes here
 %   Detailed explanation goes here
 
 CFL = Parameters.CFL;
 CellSize_D = grid.CellSize_D;
 
-[Cmax_XG,Cmax_YG,Cmax_ZG] = get_speed_max(state_VG);
+[Cmax_GX,Cmax_GY,Cmax_GZ] = get_speed_max(state_GV);
 
 % [Cmax_XF,Cmax_YF,Cmax_ZF] = faceValue.get_speed_max;
 % 
@@ -15,11 +15,11 @@ CellSize_D = grid.CellSize_D;
 
 if Parameters.TimeAccurate
    timestep = CFL ./ ...
-      (Cmax_XG/CellSize_D(1)+Cmax_YG/CellSize_D(2)+Cmax_ZG/CellSize_D(3));
+      (Cmax_GX/CellSize_D(1)+Cmax_GY/CellSize_D(2)+Cmax_GZ/CellSize_D(3));
    timestep = min(timestep(:)); 
 else
    timestep = CFL / ...
-      (Cmax_XG/CellSize_D(1)+Cmax_YG/CellSize_D(2)+Cmax_ZG/CellSize_D(3));
+      (Cmax_GX/CellSize_D(1)+Cmax_GY/CellSize_D(2)+Cmax_GZ/CellSize_D(3));
 end
 
 end
