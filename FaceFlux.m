@@ -24,7 +24,7 @@ classdef FaceFlux < handle
    
    %======================== METHODS =================================
    methods (Access = public)
-      function obj = calc_face_flux(obj)
+      function calc_face_flux(obj)
          % Calculate the face fluxes in generalized coordinates from face
          % values on the left and right of the face
          %-----------------------------------------------------------------

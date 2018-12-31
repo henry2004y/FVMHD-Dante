@@ -18,9 +18,10 @@ classdef Boundary < handle
    
    %======================== METHODS =================================
    methods (Access = public)
-      function state_GV = set_cell_boundary(obj,state_GV)
+      function state = set_cell_boundary(obj,state)
          %SET_CELL_BOUNDARY applies boundary conditions to the chosen grid.
          
+         state_GV = state.state_GV;
          
          nG = Parameters.nG;
          iMin = Parameters.iMin;
@@ -84,6 +85,7 @@ classdef Boundary < handle
                error('unknown boundary type!')
          end
          
+         state.state_GV = state_GV;
       end
    end
 end

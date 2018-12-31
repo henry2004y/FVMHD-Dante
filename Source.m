@@ -4,14 +4,16 @@ classdef Source < handle
    
    %======================== MEMBERS =================================
    properties
-      source_GV(:,:,:,:) double {mustBeReal}
+      source_GV(:,:,:,:) double
    end
    
    %======================== METHODS =================================
    methods
-      function calc_source(obj,grid,state_GV)
+      function calc_source(obj,grid,state)
          %CALC_SOURCE Calculate all the source terms.
          %
+         
+         state_GV = state.state_GV;
          
          gamma = Const.gamma;
          
@@ -32,15 +34,9 @@ classdef Source < handle
          
          % Calculate divergence of B using central difference
          DivB = divergence_ndgrid(grid.X,grid.Y,grid.Z,state_GV(:,:,:,B_));
-         % Add a singleton dimension for the sake of matrix operation later
-         %note: maybe this is not needed if I change the sequence!
-         %DivB = reshape(DivB,[1 size(DivB)]);
          
          DivU = divergence_ndgrid(grid.X,grid.Y,grid.Z,...
             state_GV(:,:,:,U_)./state_GV(:,:,:,Rho_));
-         % Add a singleton dimension for the sake of matrix operation later
-         % 
-         %DivU = reshape(DivU,[size(DivU) 1]);
          
          obj.source_GV = Inf([GridSize nVar]);
          

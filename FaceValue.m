@@ -22,7 +22,10 @@ classdef FaceValue < handle
    
    %======================== METHODS =================================
    methods (Access = public)
-      function obj = calc_face_value(obj,state_GV)
+      function calc_face_value(obj,state)
+         %CALC_FACE_VALUE Calculate the face values.
+         
+         state_GV = state.state_GV;
          
          iMin = Parameters.iMin;
          iMax = Parameters.iMax;
@@ -60,7 +63,6 @@ classdef FaceValue < handle
             % Get the gradient of states
             
             % Linear interpolation onto edge centers (with limiters)
-            
             
          end
       end

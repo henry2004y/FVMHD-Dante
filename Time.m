@@ -1,4 +1,4 @@
-classdef Time
+classdef Time < handle
    %TIME Class of timestep control.
    % This class contains data and operations pertinent to timesteps.
    
@@ -18,7 +18,7 @@ classdef Time
    
    %======================== METHODS =================================
    methods (Access = public)
-      function obj = calc_timestep(obj,grid,state_GV)
+      function calc_timestep(obj,grid,state_GV)
          %CALC_TIMESTEP Calculate the timestep.
          %  Return the timestep under CFL condition.
          

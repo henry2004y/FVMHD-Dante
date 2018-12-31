@@ -13,6 +13,8 @@ classdef State < handle
       U(:,:,:,3)  double {mustBeReal}
       B(:,:,:,3)  double {mustBeReal}
       P(:,:,:)    double {mustBeReal, mustBeGreaterThan(P, 0)}
+      
+      state_GV(:,:,:,:) double
    end
    
    properties (Dependent)
@@ -42,6 +44,7 @@ classdef State < handle
             obj.U   = velocity;
             obj.B   = Bfield;
             obj.P   = pressure;
+            obj = obj.SetState;
          end
       end
    end
@@ -77,7 +80,7 @@ classdef State < handle
          %SET_INIT_RIEMANN Load the IC of a classical 1D Riemann Problems.
          %   Detailed explanation goes here
          
-
+         
          % Riemann Problems
          switch Parameters.RiemannProblemType
             case{1} % Configuration 1, Sod's Problem
@@ -225,39 +228,31 @@ classdef State < handle
          P(R) = p(2); % region 2
          
       end
-
+      
    end
    
    %======================== METHODS =================================
    methods
-      function state_GV = SetState(obj)
+      function obj = SetState(obj)
          % Reorganize data structure.
-         %          state_VG = Inf([Parameters.nVar,Parameters.FullSize]);
-         %
-         %          state_VG(Parameters.Rho_,:,:,:) = obj.Rho;
-         %          state_VG(Parameters.U_,:,:,:) = obj.U .*...
-         %             state_VG(Parameters.Rho_,:,:,:);
-         %          state_VG(Parameters.B_,:,:,:) = obj.B;
-         %          state_VG(Parameters.P_,:,:,:) = obj.P;
          
-         state_GV = Inf([Parameters.FullSize,Parameters.nVar]);
+         obj.state_GV = Inf([Parameters.FullSize,Parameters.nVar]);
          
-         state_GV(:,:,:,Parameters.Rho_) = obj.Rho;
-         state_GV(:,:,:,Parameters.U_)   = obj.U .*...
-            state_GV(:,:,:,Parameters.Rho_);
-         state_GV(:,:,:,Parameters.B_) = obj.B;
-         state_GV(:,:,:,Parameters.P_) = obj.P;
-         
+         obj.state_GV(:,:,:,Parameters.Rho_) = obj.Rho;
+         obj.state_GV(:,:,:,Parameters.U_)   = obj.U .*...
+            obj.state_GV(:,:,:,Parameters.Rho_);
+         obj.state_GV(:,:,:,Parameters.B_) = obj.B;
+         obj.state_GV(:,:,:,Parameters.P_) = obj.P;       
       end
       
-      function obj = GetState(obj,state_GV)
+      function obj = GetState(obj)
          % Reorganize data structure for post-processing.
          
-         obj.Rho = state_GV(:,:,:,Parameters.Rho_);
-         obj.U   = state_GV(:,:,:,Parameters.U_) ./...
-            state_GV(:,:,:,Parameters.Rho_);
-         obj.B   = state_GV(:,:,:,Parameters.B_);
-         obj.P   = state_GV(:,:,:,Parameters.P_);
+         obj.Rho = obj.state_GV(:,:,:,Parameters.Rho_);
+         obj.U   = obj.state_GV(:,:,:,Parameters.U_) ./...
+            obj.state_GV(:,:,:,Parameters.Rho_);
+         obj.B   = obj.state_GV(:,:,:,Parameters.B_);
+         obj.P   = obj.state_GV(:,:,:,Parameters.P_);
          
       end
       
@@ -266,6 +261,106 @@ classdef State < handle
          
          obj.Energy = obj.P / (Const.gamma-1) + ...
             0.5*obj.Rho.*sum(obj.U.^2,4) + 0.5*sum(obj.B.^2,4);
+      end
+      
+      function update_state(obj,grid,faceFlux,source,time)
+         %UPDATE_STATE Update the state variables in one timestep.
+         %
+         %INPUTS:
+         % grid:     class of grid
+         % state_VG: state variables
+         % faceFlux: class of fluxes
+         % source:   class of sources
+         % dt:       timestep
+         %OUTPUTS:
+         % stateNew_VG: updated states
+         %
+         % Hongyang Zhou, hyzhou@umich.edu
+         
+         stateNew_GV = obj.state_GV;
+         state_GV    = obj.state_GV;
+         source_GV   = source.source_GV;
+         dt          = time.dt;
+         
+         CellSize_D = grid.CellSize_D;
+         
+         iMin = Parameters.iMin;
+         iMax = Parameters.iMax;
+         jMin = Parameters.jMin;
+         jMax = Parameters.jMax;
+         kMin = Parameters.kMin;
+         kMax = Parameters.kMax;
+         Rho_ = Parameters.Rho_;
+         P_   = Parameters.P_;
+         E_   = Parameters.E_;
+         U_   = Parameters.U_;
+         B_   = Parameters.B_;
+         Bz_  = Parameters.Bz_;
+         
+         Flux_XV = faceFlux.Flux_XV;
+         Flux_YV = faceFlux.Flux_YV;
+         Flux_ZV = faceFlux.Flux_ZV;
+         
+         if strcmp(Parameters.GridType,'Cartesian')
+            % no need for volume and face
+            
+            if ~Parameters.UseConservative
+               stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,:) = ...
+                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,:) - dt.*(...
+                  (Flux_XV(2:end,:,:,:) - Flux_XV(1:end-1,:,:,:))/...
+                  CellSize_D(1) +...
+                  (Flux_YV(:,2:end,:,:) - Flux_YV(:,1:end-1,:,:))/...
+                  CellSize_D(2) +...
+                  (Flux_ZV(:,:,2:end,:) - Flux_ZV(:,:,1:end-1,:))/...
+                  CellSize_D(3))+...
+                  source_VG;
+            else
+               stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_:Bz_) = ...
+                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_:Bz_) - ...
+                  dt.*(...
+                  (Flux_XV(2:end,:,:,Rho_:Bz_) -...
+                   Flux_XV(1:end-1,:,:,Rho_:Bz_)) / CellSize_D(1) + ...
+                  (Flux_YV(:,2:end,:,Rho_:Bz_) - ...
+                   Flux_YV(:,1:end-1,:,Rho_:Bz_)) / CellSize_D(2) + ...
+                  (Flux_ZV(:,:,2:end,Rho_:Bz_) - ...
+                   Flux_ZV(:,:,1:end-1,Rho_:Bz_)) / CellSize_D(3))+ ...
+                  source_GV(:,:,:,Rho_:Bz_);
+               
+               gamma = Const.gamma;
+               
+               state_GV(iMin:iMax,jMin:jMax,kMin:kMax,E_) = ...
+                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,P_) / ...
+                  (gamma-1) + ...
+                  0.5./state_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_).*...
+                  sum(state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_).^2,4) +...
+                  0.5*sum(state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_),4);
+               
+               stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,E_) = ...
+                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,E_) - dt.*(...
+                  (Flux_XV(2:end,:,:,E_) - Flux_XV(1:end-1,:,:,E_))/...
+                  CellSize_D(1) + ...
+                  (Flux_YV(:,2:end,:,E_) - Flux_YV(:,1:end-1,:,E_))/...
+                  CellSize_D(2) + ...
+                  (Flux_ZV(:,:,2:end,E_) - Flux_ZV(:,:,1:end-1,E_))/...
+                  CellSize_D(3))+ ...
+                  source_GV(:,:,:,E_);
+               
+               stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,P_) = ...
+                  (gamma-1)* ...
+                  (stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,E_) - ...
+                  0.5./stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_).*...
+                  sum(...
+                  stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_).^2,4) -...
+                  0.5*sum(...
+                  stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_),4) );
+            end
+         else
+            % need volume and face
+            stateNew_GV = 0;
+            
+         end
+         
+         obj.state_GV = stateNew_GV;
       end
       
       function plot(obj,varargin)
