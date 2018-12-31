@@ -6,7 +6,7 @@
 % First series of tests passed in 07/29/2018
 % Modified 12/30/2018, for fully OOP and better data structures.
 
-clear;clc; close all
+clear; clc; close all
 %% Initialization
 
 % Constants set in class NamedConst
@@ -31,8 +31,7 @@ boundary  = Boundary;
 faceValue = FaceValue;
 faceFlux  = FaceFlux(faceValue);
 source    = Source;
-
-clearvars density velocity Bfield pressure
+time      = Time;
 
 disp('Initialization finished...')
 
