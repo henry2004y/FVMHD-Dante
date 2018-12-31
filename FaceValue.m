@@ -24,17 +24,6 @@ classdef FaceValue < handle
    methods (Access = public)
       function obj = calc_face_value(obj,state_GV)
          
-         
-%          Rho_ = Parameters.Rho_;
-%          Bz_  = Parameters.Bz_;
-%          P_   = Parameters.P_;
-%          E_   = Parameters.E_;
-%          U_   = Parameters.U_;
-%          B_   = Parameters.B_;
-%          
-%          % Allocation
-%          nVar = Parameters.nVar;
-%          
          iMin = Parameters.iMin;
          iMax = Parameters.iMax;
          jMin = Parameters.jMin;
@@ -49,13 +38,6 @@ classdef FaceValue < handle
             obj.RState_YV = state_GV(iMin:iMax,jMin:jMax+1,kMin:kMax,:);
             obj.LState_ZV = state_GV(iMin:iMax,jMin:jMax,kMin-1:kMax,:);
             obj.RState_ZV = state_GV(iMin:iMax,jMin:jMax,kMin:kMax+1,:);
-            
-            
-%             obj.LState_XV(:,:,:,Rho_) = ...
-%                state.Rho(iMin-1:iMax,jMin:jMax,kMin:kMax);
-%             obj.LState_XV(:,:,:,B_) = ...
-%                state.B()
-            
          else % 2nd order
             % Compute and limit slopes
             %dq_X=zeros(Parameters.nVar,Parameters.nI+1);
