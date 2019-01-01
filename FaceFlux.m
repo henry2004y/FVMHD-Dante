@@ -1,6 +1,10 @@
 classdef FaceFlux < handle
    %FaceFlux Class of fluxes
    % This class holds all data and operations pertinent to the fluxes.
+   % For higher order schemes, it may be better to make this a normal class
+   % instead of handle class. If I use 2nd order modifed Euler, a handle
+   % class if fine; but I need a normal class for predictor-corrector
+   % method. Let's see what will happen for even higher orders. 
    
    %======================== MEMBERS =================================
    properties (GetAccess = public, SetAccess = private)
@@ -24,16 +28,16 @@ classdef FaceFlux < handle
    
    %======================== METHODS =================================
    methods (Access = public)
-      function calc_face_flux(obj)
+      function obj = calc_face_flux(obj,faceValue)
          % Calculate the face fluxes in generalized coordinates from face
          % values on the left and right of the face
          %-----------------------------------------------------------------
                   
-         obj.get_physical_flux;
-         obj.add_numerical_flux;
+         obj = obj.get_physical_flux(faceValue);
+         obj = obj.add_numerical_flux(faceValue);
       end
       
-      function get_physical_flux(obj)
+      function obj = get_physical_flux(obj,faceValue)
          % Calculate the physical fluxes
          %INPUT:
          %  FaceValue Class object
@@ -42,12 +46,19 @@ classdef FaceFlux < handle
          %-----------------------------------------------------------------
          
          % Aliases
-         LState_XV = obj.faceValue.LState_XV;
-         RState_XV = obj.faceValue.RState_XV;
-         LState_YV = obj.faceValue.LState_YV;
-         RState_YV = obj.faceValue.RState_YV;
-         LState_ZV = obj.faceValue.LState_ZV;
-         RState_ZV = obj.faceValue.RState_ZV;
+         LState_XV = faceValue.LState_XV;
+         RState_XV = faceValue.RState_XV;
+         LState_YV = faceValue.LState_YV;
+         RState_YV = faceValue.RState_YV;
+         LState_ZV = faceValue.LState_ZV;
+         RState_ZV = faceValue.RState_ZV;
+
+%          LState_XV = obj.faceValue.LState_XV;
+%          RState_XV = obj.faceValue.RState_XV;
+%          LState_YV = obj.faceValue.LState_YV;
+%          RState_YV = obj.faceValue.RState_YV;
+%          LState_ZV = obj.faceValue.LState_ZV;
+%          RState_ZV = obj.faceValue.RState_ZV;
              
          nVar = Parameters.nVar;
          GridSize = Parameters.GridSize;
@@ -286,17 +297,23 @@ classdef FaceFlux < handle
          obj.Flux_ZV = 0.5 * (LFlux_ZV + RFlux_ZV);
       end
       
-      function add_numerical_flux(obj)
+      function obj = add_numerical_flux(obj,faceValue)
          % Calculate numerical fluxes and add to the physical fluxes.
          %-----------------------------------------------------------------
          
          % Aliases
-         LState_XV = obj.faceValue.LState_XV;
-         RState_XV = obj.faceValue.RState_XV;
-         LState_YV = obj.faceValue.LState_YV;
-         RState_YV = obj.faceValue.RState_YV;
-         LState_ZV = obj.faceValue.LState_ZV;
-         RState_ZV = obj.faceValue.RState_ZV;
+         LState_XV = faceValue.LState_XV;
+         RState_XV = faceValue.RState_XV;
+         LState_YV = faceValue.LState_YV;
+         RState_YV = faceValue.RState_YV;
+         LState_ZV = faceValue.LState_ZV;
+         RState_ZV = faceValue.RState_ZV;
+%          LState_XV = obj.faceValue.LState_XV;
+%          RState_XV = obj.faceValue.RState_XV;
+%          LState_YV = obj.faceValue.LState_YV;
+%          RState_YV = obj.faceValue.RState_YV;
+%          LState_ZV = obj.faceValue.LState_ZV;
+%          RState_ZV = obj.faceValue.RState_ZV;
          
          if strcmp(Parameters.Scheme,'Rusanov')
             
@@ -372,16 +389,7 @@ classdef FaceFlux < handle
    end
    
    
-   methods (Access = private)
-      function mm = minmod(v)
-         % Using Harten's generalized definition
-         % minmod: zero if opposite sign, otherwise the one of smaller magnitude.
-         %m=size(v,1); mm=zeros(size(v,2),1); s=sum(sign(v),2)/m; ids=find(abs(s)==1);
-         %if(~isempty(ids)); mm(ids)=s(ids).*min(abs(v(ids,:)),[],2); end
-         s = sum(sign(v))/numel(v);
-         if abs(s)==1; mm = s*min(abs(v(:))); else mm=0; end
-      end
-      
+   methods (Access = private)      
       function [cmax_XF,cmax_YF,cmax_ZF] = get_speed_max(obj)
          % Calculate the maximum speed in each direction.
          gamma = Const.gamma;
