@@ -1,7 +1,8 @@
 classdef Grid < handle
    %grid The class of simulation grid
-   %   Detailed explanation goes here
+   %  This class holds grid information.
    
+   %======================== MEMBERS =================================
    properties (SetAccess = private)
       CoordMinMax_D(3,2) double {mustBeReal}
       %xyz_DG(3,:,:,:) double {mustBeReal}
@@ -14,6 +15,7 @@ classdef Grid < handle
       CellVolume_G(:,:,:) double {mustBeGreaterThan(CellVolume_G,0)}
    end
    
+   %======================== CONSTRUCTORS ============================
    methods
       function obj = Grid
          %grid Construct an instance of this class
@@ -69,8 +71,7 @@ classdef Grid < handle
                   
                   % FaceNormal is probably not needed in Cartesian
 %                end;end;end
-         
-               
+          
             case 'Spherical'
                error('Not yet implemented!')
             otherwise
@@ -79,11 +80,11 @@ classdef Grid < handle
 
       end
       
-%       function outputArg = method1(obj,inputArg)
-%          %METHOD1 Summary of this method goes here
-%          %   Detailed explanation goes here
-%          outputArg = obj.Property1 + inputArg;
-%       end
+      function x = getX(obj)
+      %GETX Get the x coordinates.
+         nG = Parameters.nG;
+         x = obj.X(nG+1:end-nG,nG+1,nG+1);
+      end
    end
 end
 
