@@ -8,11 +8,11 @@ classdef Parameters
    
    properties (Constant)
       GridType   char = 'Cartesian'
-      GridSize   double {mustBeInteger} = [100,1,1]
+      GridSize   double {mustBeInteger} = [200,1,1]
       nI         double {mustBeInteger} = Parameters.GridSize(1)
       nJ         double {mustBeInteger} = Parameters.GridSize(2)
       nK         double {mustBeInteger} = Parameters.GridSize(3)
-      nG         double {mustBeInteger} = 1
+      nG         double {mustBeInteger} = 2
       xyzMinMax(3,2) double {mustBeReal}= [0 1;0 1; 0 1]
       % Size including ghost cells
       FullSize   double {mustBeInteger} = ...
@@ -34,7 +34,7 @@ classdef Parameters
       
       
       Scheme     char = 'Rusanov'
-      Order      double {mustBeMember(Order,[1,2])} = 1
+      Order      double {mustBeMember(Order,[1,2])} = 2
       CFL        double = 0.9
       limiter    char = 'MM'
       TimeAccurate logical = true
@@ -53,8 +53,8 @@ classdef Parameters
       U_         = [Parameters.Ux_ Parameters.Uy_ Parameters.Uz_]
       B_         = [Parameters.Bx_ Parameters.By_ Parameters.Bz_]
       
-      BC         char = 'periodic'
-      IC         char = 'contact discontinuity'
+      BC         char = 'float'
+      IC         char = 'density wave'
       RiemannProblemType double {mustBeInteger} = 1;
       
       nStep      double {mustBeInteger} = 100

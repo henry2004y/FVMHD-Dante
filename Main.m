@@ -6,7 +6,7 @@
 % First series of tests passed in 07/29/2018
 % Modified 12/30/2018, for fully OOP and better data structures.
 
-clear; clc; close all
+clear; clc;% close all
 %% Initialization
 
 % Constants set in class NamedConst
@@ -26,7 +26,7 @@ grid = Grid;
 state = State(false,grid);
 %state_GV = state.SetState;
 state = state.SetState;
-state.plot('rho',0)
+state.plot('rho',grid,0)
 
 boundary  = Boundary;
 faceValue = FaceValue;
@@ -60,26 +60,26 @@ while t < tEnd % 1st order method
    faceValue.calc_face_value(state);
    
    % Calculate face flux
-   faceFlux.calc_face_flux;
+   faceFlux.calc_face_flux(faceValue);
    
    % Calculate source
    source.calc_source(grid,state);
    
    % Calculate time step
-   time.calc_timestep(grid,state.state_GV);
+   time.calc_timestep(grid,state);
 
-   if t+time.dt > tEnd; dt = tEnd - t; end
+   if t + time.dt > tEnd; time.dt = tEnd - t; end
       
    % Update state
-   state.update_state(grid,faceFlux,source,time);   
+   state = state.update_state(grid,faceFlux,source,time);   
 
-   t = t + time.dt;
+   t  = t + time.dt;
    it = it + 1;
    
    state = state.GetState;
-   state.plot('rho',it)
-   %state.plot('ux',it)
-   pause(.1)
+   %state.plot('rho',grid,it)
+   state.plot('rho',grid,it)
+   pause(.05)
    
    fprintf('it,t=%d,%f\n',it,t)
 end
@@ -95,49 +95,49 @@ while t < tEnd % 2nd order method
    faceValue.calc_face_value(state);
    
    % Calculate face flux
-   faceFlux.calc_face_flux;
+   faceFlux.calc_face_flux(faceValue);
    
    % Calculate source
    source.calc_source(grid,state);
    
    % Calculate time step
-   time.calc_timestep(grid,state.state_GV);
-   
-   if t + time.dt > tEnd; dt = tEnd - t; end
+   time.calc_timestep(grid,state);
    
    % Update state in the 1st stage
    time.dt = 0.5*time.dt;
-   state.update_state(grid,faceFlux,source,time);
+   state1 = state.update_state(grid,faceFlux,source,time);
    
 
    % 2nd stage of modified timestepping
    
    % Set boundary conditions
-   state = boundary.set_cell_boundary(state);
+   state1 = boundary.set_cell_boundary(state1);
    
    % Calculate face value
-   faceValue.calc_face_value(state);
+   faceValue.calc_face_value(state1);
    
    % Calculate face flux
-   faceFlux.calc_face_flux;
+   faceFlux.calc_face_flux(faceValue);
    
    % Calculate source
-   source.calc_source(grid,state);
+   source.calc_source(grid,state1);
    
    % Update state
-   state.update_state(grid,faceFlux,source,time);
-   
    time.dt = 2*time.dt;
+   state = state.update_state(grid,faceFlux,source,time);
+   
+   if t + time.dt > tEnd; time.dt = tEnd - t; end
+   
    t = t + time.dt;
    it = it + 1;
    
-   state = state.GetState(state_GV);
-   state.plot('rho',it)
-   pause(.1)
+   state = state.GetState;
+   state.plot('rho',grid,it)
+   pause(.05)
    
    fprintf('it,t=%d,%f\n',it,t)
 end
-
+   clearvars state1
    otherwise
 error('Higher Order schemes not yet implemented!')   
 end
@@ -182,7 +182,14 @@ disp('advance finished...')
 
 %% Visualization
 
-% state = state.GetState(state_VG);
-% 
-% state.plot('rho',iStep)
+nI = Parameters.nI;
+
+% Exact solution
+[xe,re,ue,pe,ee,te,Me,se] = ...
+   EulerExact(1,0,1, 0.125,0,0.1,0.1, 3);
+Ee = pe./((Const.gamma-1)*re)+0.5*ue.^2;
+
+figure(3); hold on
+x = grid.getX;
+plot(xe,re,'--')
 
