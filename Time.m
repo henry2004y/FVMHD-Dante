@@ -18,12 +18,13 @@ classdef Time < handle
    
    %======================== METHODS =================================
    methods (Access = public)
-      function calc_timestep(obj,grid,state_GV)
+      function calc_timestep(obj,grid,state)
          %CALC_TIMESTEP Calculate the timestep.
          %  Return the timestep under CFL condition.
          
          CFL = Parameters.CFL;
          CellSize_D = grid.CellSize_D;
+         state_GV = state.state_GV;
          
          [Cmax_GX,Cmax_GY,Cmax_GZ] = obj.get_speed_max(state_GV);
          
