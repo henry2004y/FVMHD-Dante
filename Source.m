@@ -12,6 +12,7 @@ classdef Source < handle
       function calc_source(obj,grid,state)
          %CALC_SOURCE Calculate all the source terms.
          %
+         % There seems to be no change for 2nd order schemes?
          
          state_GV = state.state_GV;
          
@@ -40,33 +41,27 @@ classdef Source < handle
          
          obj.source_GV = Inf([GridSize nVar]);
          
-         if Parameters.Order == 1
-            obj.source_GV(:,:,:,Rho_) = 0;
-            obj.source_GV(:,:,:,U_) = ...
-               -state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_).*...
-               DivB(iMin:iMax,jMin:jMax,kMin:kMax);
-            
-            obj.source_GV(:,:,:,B_) = ...
-               state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_).*...
-               DivB(iMin:iMax,jMin:jMax,kMin:kMax);
-            
-            if ~Parameters.UseConservative
-               obj.source_GV(:,:,:,P_) = -(gamma-1) * ...
-                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,P_).*...
-                  DivU(iMin:iMax,jMin:jMax,kMin:kMax);
-            else
-               obj.source_GV(:,:,:,E_) = ...
-                  -sum(state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_) .*...
-                  state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_),4) .* ...
-                  DivB(iMin:iMax,jMin:jMax,kMin:kMax);
-            end
-            
-         elseif Parameters.Order == 2
-            
+         obj.source_GV(:,:,:,Rho_) = 0;
+         obj.source_GV(:,:,:,U_) = ...
+            -state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_).*...
+            DivB(iMin:iMax,jMin:jMax,kMin:kMax);
+         
+         obj.source_GV(:,:,:,B_) = ...
+            state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_).*...
+            DivB(iMin:iMax,jMin:jMax,kMin:kMax);
+         
+         if ~Parameters.UseConservative
+            obj.source_GV(:,:,:,P_) = -(gamma-1) * ...
+               state_GV(iMin:iMax,jMin:jMax,kMin:kMax,P_).*...
+               DivU(iMin:iMax,jMin:jMax,kMin:kMax);
          else
-            
+            obj.source_GV(:,:,:,E_) = ...
+               -sum(state_GV(iMin:iMax,jMin:jMax,kMin:kMax,U_) .*...
+               state_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_),4) .* ...
+               DivB(iMin:iMax,jMin:jMax,kMin:kMax);
          end
       end
+      
    end
 end
 
