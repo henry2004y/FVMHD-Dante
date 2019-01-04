@@ -24,13 +24,12 @@ grid = Grid;
 
 % Init variables and arrays
 state = State(false,grid);
-%state_GV = state.SetState;
 state = state.SetState;
 state.plot('rho',grid,0)
 
 boundary  = Boundary;
 faceValue = FaceValue;
-faceFlux  = FaceFlux(faceValue);
+faceFlux  = FaceFlux;
 source    = Source;
 time      = Time;
 
@@ -189,7 +188,7 @@ nI = Parameters.nI;
    EulerExact(1,0,1, 0.125,0,0.1,0.1, 3);
 Ee = pe./((Const.gamma-1)*re)+0.5*ue.^2;
 
-figure(3); hold on
+figure(2); hold on
 x = grid.getX;
 plot(xe,re,'--')
 

@@ -396,7 +396,7 @@ classdef State %< handle
          var = squeeze(var); % Unify dimensions
          var = var(iMin:iMax,jMin:jMax,kMin:kMax); % Remove ghost cells
          
-         figure(3)
+         figure(2)
          plot(x,var,'LineWidth',1.5)
          
          title(sprintf('iStep=%d',iStep))

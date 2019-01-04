@@ -33,7 +33,7 @@ classdef Parameters
       kMaxAll    double {mustBeInteger} = Parameters.nK + 2*Parameters.nG
       
       
-      Scheme     char = 'Rusanov'
+      Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'Rusanov'
       Order      double {mustBeMember(Order,[1,2])} = 2
       CFL        double = 0.9
       limiter    char = 'MM'
