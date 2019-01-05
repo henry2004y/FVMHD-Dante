@@ -8,11 +8,11 @@ classdef Parameters
    
    properties (Constant)
       GridType   char = 'Cartesian'
-      GridSize   double {mustBeInteger} = [200,1,1]
+      GridSize   double {mustBeInteger} = [20,1,1]
       nI         double {mustBeInteger} = Parameters.GridSize(1)
       nJ         double {mustBeInteger} = Parameters.GridSize(2)
       nK         double {mustBeInteger} = Parameters.GridSize(3)
-      nG         double {mustBeInteger} = 2
+      nG         double {mustBeInteger} = 1
       xyzMinMax(3,2) double {mustBeReal}= [0 1;0 1; 0 1]
       % Size including ghost cells
       FullSize   double {mustBeInteger} = ...
@@ -33,12 +33,12 @@ classdef Parameters
       kMaxAll    double {mustBeInteger} = Parameters.nK + 2*Parameters.nG
       
       
-      Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'Rusanov'
-      Order      double {mustBeMember(Order,[1,2])} = 2
+      Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'HLLE'
+      Order      double {mustBeMember(Order,[1,2])} = 1
       CFL        double = 0.9
       limiter    char = 'MM'
       TimeAccurate logical = true
-      UseConservative logical = true
+      UseConservative logical = false
       nStage     double {mustBeInteger} = Parameters.Order
       nVar       double {mustBeInteger} = 8
       Rho_       = 1
@@ -54,7 +54,8 @@ classdef Parameters
       B_         = [Parameters.Bx_ Parameters.By_ Parameters.Bz_]
       
       BC         char = 'float'
-      IC         char = 'density wave'
+      IC         char {mustBeMember(IC,{'density wave', ...
+         'contact discontinuity','shocktube','Riemann'})}= 'Riemann'
       RiemannProblemType double {mustBeInteger} = 1;
       
       nStep      double {mustBeInteger} = 100
