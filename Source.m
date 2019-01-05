@@ -10,9 +10,8 @@ classdef Source < handle
    %======================== METHODS =================================
    methods
       function calc_source(obj,grid,state)
-         %CALC_SOURCE Calculate all the source terms.
-         %
-         % There seems to be no change for 2nd order schemes?
+         %CALC_SOURCE Calculate the source terms.
+         %-----------------------------------------------------------------
          
          state_GV = state.state_GV;
          
@@ -36,8 +35,13 @@ classdef Source < handle
          % Calculate divergence of B using central difference
          DivB = divergence_ndgrid(grid.X,grid.Y,grid.Z,state_GV(:,:,:,B_));
          
+         % Calculate divergence of U
          DivU = divergence_ndgrid(grid.X,grid.Y,grid.Z,...
             state_GV(:,:,:,U_)./state_GV(:,:,:,Rho_));
+         
+         % Rightnow the non-conservative scheme is wrong because small
+         % errors in source terms can build up and lead to negative p.
+         %DivU(:) = 0;
          
          obj.source_GV = Inf([GridSize nVar]);
          
@@ -64,4 +68,3 @@ classdef Source < handle
       
    end
 end
-
