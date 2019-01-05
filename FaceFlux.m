@@ -220,7 +220,7 @@ classdef FaceFlux < handle
             RFlux_ZV(:,:,:,P_) = RState_ZV(:,:,:,P_).*...
                RState_ZV(:,:,:,Uz_)./RState_ZV(:,:,:,Rho_);
          else
-            % Currently I am using the same index for pressure/energy
+            % Currently use the same index for pressure/energy
             gamma = Const.gamma;
             
             LFlux_XV(:,:,:,E_) = LState_XV(:,:,:,Ux_)./...
@@ -317,7 +317,7 @@ classdef FaceFlux < handle
                obj.Flux_YV = obj.Flux_YV - ...
                   0.5*cmax_YF.*(RState_YV - LState_YV);
                obj.Flux_ZV = obj.Flux_ZV - ...
-                  0.5*cmax_ZF.*(RState_ZV - LState_ZV);
+                  0.5*cmax_ZF.*(RState_ZV - LState_ZV);               
             else
                % If I solve energy equation instead of pressure, there's
                % duplicate calculation above, even though the expression
@@ -387,7 +387,6 @@ classdef FaceFlux < handle
          %  Fluxes in 3 directions
          %-----------------------------------------------------------------
          
-         %% Physical fluxes
          % Aliases
          LState_XV = faceValue.LState_XV;
          RState_XV = faceValue.RState_XV;
@@ -418,6 +417,9 @@ classdef FaceFlux < handle
          LFlux_ZV = Inf([GridSize+[0 0 1],nVar]);
          RFlux_ZV = Inf([GridSize+[0 0 1],nVar]);
          
+         %----------------
+         % Physical fluxes
+         %----------------
          % Density flux
          LFlux_XV(:,:,:,Rho_) = LState_XV(:,:,:,Ux_);
          RFlux_XV(:,:,:,Rho_) = RState_XV(:,:,:,Ux_);
@@ -631,8 +633,10 @@ classdef FaceFlux < handle
          obj.Flux_XV = 0.5 * (LFlux_XV + RFlux_XV);
          obj.Flux_YV = 0.5 * (LFlux_YV + RFlux_YV);
          obj.Flux_ZV = 0.5 * (LFlux_ZV + RFlux_ZV);
-                
-         %% Add numerical fluxes
+         
+         %---------------------
+         % Add numerical fluxes
+         %---------------------
          
          [smax_XF,smax_YF,smax_ZF,smin_XF,smin_YF,smin_ZF] = ...
             obj.get_speed_maxmin(faceValue);
@@ -721,13 +725,11 @@ classdef FaceFlux < handle
                sum(LState_ZV(:,:,:,U_).^2,4) + ...
                0.5*sum(LState_ZV(:,:,:,B_).^2,4)));
          end
-         
-         
       end
-      
       
       function [cmax_XF,cmax_YF,cmax_ZF] = get_speed_max(obj,faceValue)
          % Calculate the maximum speed in each direction.
+         %-----------------------------------------------------------------
          gamma = Const.gamma;
          
          % Aliases
@@ -797,6 +799,7 @@ classdef FaceFlux < handle
             get_speed_maxmin(obj,faceValue)
          % Calculate the maximum and minimum speed in each direction.
          % Following CFD-I note, P148.
+         %-----------------------------------------------------------------
          gamma = Const.gamma;
          
          % Aliases
