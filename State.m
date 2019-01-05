@@ -34,10 +34,16 @@ classdef State %< handle
          disp('Initializing state variables...')
          
          % Set initial conditions
-         %[density,velocity,Bfield,pressure] = obj.set_init;
-         [density,velocity,Bfield,pressure,tEnd] = ...
-            obj.set_init_Riemann(grid);
-         
+         switch Parameters.IC
+            case {'density wave','contact discontinuity','shocktube'}
+               [density,velocity,Bfield,pressure] = obj.set_init;
+            case 'Riemann'
+               [density,velocity,Bfield,pressure,tEnd] = ...
+                  obj.set_init_Riemann(grid);
+            otherwise
+               error('unknown initial condition!')
+         end
+               
          if nargin == 0
             disp('Using default grid')
             obj.Rho = ones(GridGen.GridSize);
@@ -306,7 +312,7 @@ classdef State %< handle
          Flux_ZV = faceFlux.Flux_ZV;
          
          if strcmp(Parameters.GridType,'Cartesian')
-            % no need for volume and face
+            % No need for volume and face if the grid is uniform Cartesian
             
             if ~Parameters.UseConservative
                stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,:) = ...
@@ -359,7 +365,7 @@ classdef State %< handle
                   stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,B_),4) );
             end
          else
-            % need volume and face
+            % Need volume and face
             stateNew_GV = 0;
             
          end
