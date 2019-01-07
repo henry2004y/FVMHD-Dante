@@ -1,6 +1,6 @@
 classdef Parameters
-   %Main The definition of general information in the simulation
-   %   General information includes:
+   %Main The definition of general information in the simulation.
+   %
    % GridType  Type of simulation grid. Options:
    %    (1) Cartesian  (2) Spherical
    % GridSize  Size of simulation grid
@@ -8,7 +8,7 @@ classdef Parameters
    
    properties (Constant)
       GridType   char = 'Cartesian'
-      GridSize   double {mustBeInteger} = [20,1,1]
+      GridSize   double {mustBeInteger} = [4,1,1]
       nI         double {mustBeInteger} = Parameters.GridSize(1)
       nJ         double {mustBeInteger} = Parameters.GridSize(2)
       nK         double {mustBeInteger} = Parameters.GridSize(3)
@@ -33,9 +33,9 @@ classdef Parameters
       kMaxAll    double {mustBeInteger} = Parameters.nK + 2*Parameters.nG
       
       
-      Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'HLLE'
+      Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'Rusanov'
       Order      double {mustBeMember(Order,[1,2])} = 1
-      CFL        double = 0.9
+      CFL        double = 0.8
       limiter    char = 'MM'
       TimeAccurate logical = true
       UseConservative logical = false
@@ -53,14 +53,14 @@ classdef Parameters
       U_         = [Parameters.Ux_ Parameters.Uy_ Parameters.Uz_]
       B_         = [Parameters.Bx_ Parameters.By_ Parameters.Bz_]
       
-      BC         char = 'float'
-      IC         char {mustBeMember(IC,{'density wave', ...
-         'contact discontinuity','shocktube','Riemann'})}= 'Riemann'
+      BC         char = 'periodic'
+      IC         char {mustBeMember(IC,{'density wave','square wave', ...
+         'contact discontinuity','shocktube','Riemann'})}= 'density wave'
       RiemannProblemType double {mustBeInteger} = 1;
       
-      nStep      double {mustBeInteger} = 100
-      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 0.1
+      DoAdvanceTime logical = false
+      nStep      double {mustBeInteger} = 10
+      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 1.0
    end
    
 end
-

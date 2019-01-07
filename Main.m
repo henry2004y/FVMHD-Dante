@@ -33,154 +33,201 @@ faceFlux  = FaceFlux;
 source    = Source;
 time      = Time;
 
+t = 0; it = 0;
+% Set T if not already set by set_init
+if ~exist('tEnd','var'); tEnd = Parameters.tEnd; end
+
 disp('Initialization finished...')
 
 %% Advance
 
-% while 1
-%    DoStop = stop_condition_true;
-%    if DoStop
-%       break
-%    end
-% end
-
-% Set T if not already set by set_init
-if ~exist('tEnd','var'); tEnd = Parameters.tEnd; end
-
-t = 0; it = 0;
 tic
-switch Parameters.Order
-   case 1
-      while t < tEnd % 1st order method
-         % Set boundary conditions
-         state = boundary.set_cell_boundary(state);
+if Parameters.DoAdvanceTime % Advance with time
+   switch Parameters.Order
+      case 1 % 1st order method
+         while t < tEnd
+            % Set boundary conditions
+            state = boundary.set_cell_boundary(state);
+            
+            % Calculate face value
+            faceValue.calc_face_value(state);
+            
+            % Calculate face flux
+            faceFlux.calc_face_flux(faceValue);
+            
+            % Calculate source
+            source.calc_source(grid,state);
+            
+            % Calculate time step
+            time.calc_timestep(grid,state);
+            
+            if t + time.dt > tEnd; time.dt = tEnd - t; end
+            
+            % Update state
+            state = state.update_state(grid,faceFlux,source,time);
+            
+            t  = t + time.dt;
+            it = it + 1;
+            
+            state = state.GetState;
+            state.plot('rho',grid,it)
+            %pause(.05)
+            
+            fprintf('it,t=%d,%f\n',it,t)
+         end
          
-         % Calculate face value
-         faceValue.calc_face_value(state);
+      case 2 % 2nd order method
+         while t < tEnd 
+            % 1st stage of modified timestepping
+            
+            % Set boundary conditions
+            state = boundary.set_cell_boundary(state);
+            
+            % Calculate face value
+            faceValue.calc_face_value(state);
+            
+            % Calculate face flux
+            faceFlux.calc_face_flux(faceValue);
+            
+            % Calculate source
+            source.calc_source(grid,state);
+            
+            % Calculate time step
+            time.calc_timestep(grid,state);
+            
+            % Update state in the 1st stage
+            time.dt = 0.5*time.dt;
+            state1 = state.update_state(grid,faceFlux,source,time);
+            
+            
+            % 2nd stage of modified timestepping
+            
+            % Set boundary conditions
+            state1 = boundary.set_cell_boundary(state1);
+            
+            % Calculate face value
+            faceValue.calc_face_value(state1);
+            
+            % Calculate face flux
+            faceFlux.calc_face_flux(faceValue);
+            
+            % Calculate source
+            source.calc_source(grid,state1);
+            
+            % Update state
+            time.dt = 2*time.dt;
+            state = state.update_state(grid,faceFlux,source,time);
+            
+            if t + time.dt > tEnd; time.dt = tEnd - t; end
+            
+            t = t + time.dt;
+            it = it + 1;
+            
+            state = state.GetState;
+            state.plot('rho',grid,it)
+            %pause(.05)
+            
+            fprintf('it,t=%d,%f\n',it,t)
+         end
+         clearvars state1
+      otherwise
+         error('Higher Order schemes not yet implemented!')
+   end
+else % Advance with steps
+   switch Parameters.Order
+      case 1 % 1st order method
+         for iStep = 1:Parameters.nStep
+            % Set boundary conditions
+            state = boundary.set_cell_boundary(state);
+            
+            % Calculate face value
+            faceValue.calc_face_value(state);
+            
+            % Calculate face flux
+            faceFlux.calc_face_flux(faceValue);
+            
+            % Calculate source
+            source.calc_source(grid,state);
+            
+            % Calculate time step
+            time.calc_timestep(grid,state);
+            
+            if t + time.dt > tEnd; time.dt = tEnd - t; end
+            
+            % Update state
+            state = state.update_state(grid,faceFlux,source,time);
+            
+            t  = t + time.dt;
+            
+            state = state.GetState;
+            state.plot('rho',grid,iStep)
+            %pause(.05)
+            
+            fprintf('it,t=%d,%f\n',iStep,t)
+         end
          
-         % Calculate face flux
-         faceFlux.calc_face_flux(faceValue);
-         
-         % Calculate source
-         source.calc_source(grid,state);
-         
-         % Calculate time step
-         time.calc_timestep(grid,state);
-         
-         if t + time.dt > tEnd; time.dt = tEnd - t; end
-         
-         % Update state
-         state = state.update_state(grid,faceFlux,source,time);
-         
-         t  = t + time.dt;
-         it = it + 1;
-         
-         state = state.GetState;
-         state.plot('rho',grid,it)
-         %state.plot('ux',grid,it)
-         %pause(.05)
-         
-         fprintf('it,t=%d,%f\n',it,t)
-      end
-      
-   case 2
-      while t < tEnd % 2nd order method
-         % 1st stage of modified timestepping
-         
-         % Set boundary conditions
-         state = boundary.set_cell_boundary(state);
-         
-         % Calculate face value
-         faceValue.calc_face_value(state);
-         
-         % Calculate face flux
-         faceFlux.calc_face_flux(faceValue);
-         
-         % Calculate source
-         source.calc_source(grid,state);
-         
-         % Calculate time step
-         time.calc_timestep(grid,state);
-         
-         % Update state in the 1st stage
-         time.dt = 0.5*time.dt;
-         state1 = state.update_state(grid,faceFlux,source,time);
-         
-         
-         % 2nd stage of modified timestepping
-         
-         % Set boundary conditions
-         state1 = boundary.set_cell_boundary(state1);
-         
-         % Calculate face value
-         faceValue.calc_face_value(state1);
-         
-         % Calculate face flux
-         faceFlux.calc_face_flux(faceValue);
-         
-         % Calculate source
-         source.calc_source(grid,state1);
-         
-         % Update state
-         time.dt = 2*time.dt;
-         state = state.update_state(grid,faceFlux,source,time);
-         
-         if t + time.dt > tEnd; time.dt = tEnd - t; end
-         
-         t = t + time.dt;
-         it = it + 1;
-         
-         state = state.GetState;
-         state.plot('rho',grid,it)
-         pause(.05)
-         
-         fprintf('it,t=%d,%f\n',it,t)
-      end
-      clearvars state1
-   otherwise
-      error('Higher Order schemes not yet implemented!')
+      case 2 % 2nd order method
+         for iStep = 1:Parameters.nStep 
+            % 1st stage of modified timestepping
+            
+            % Set boundary conditions
+            state = boundary.set_cell_boundary(state);
+            
+            % Calculate face value
+            faceValue.calc_face_value(state);
+            
+            % Calculate face flux
+            faceFlux.calc_face_flux(faceValue);
+            
+            % Calculate source
+            source.calc_source(grid,state);
+            
+            % Calculate time step
+            time.calc_timestep(grid,state);
+            
+            % Update state in the 1st stage
+            time.dt = 0.5*time.dt;
+            state1 = state.update_state(grid,faceFlux,source,time);
+            
+            
+            % 2nd stage of modified timestepping
+            
+            % Set boundary conditions
+            state1 = boundary.set_cell_boundary(state1);
+            
+            % Calculate face value
+            faceValue.calc_face_value(state1);
+            
+            % Calculate face flux
+            faceFlux.calc_face_flux(faceValue);
+            
+            % Calculate source
+            source.calc_source(grid,state1);
+            
+            % Update state
+            time.dt = 2*time.dt;
+            state = state.update_state(grid,faceFlux,source,time);
+            
+            if t + time.dt > tEnd; time.dt = tEnd - t; end
+            
+            t = t + time.dt;
+            
+            state = state.GetState;
+            state.plot('rho',grid,iStep)
+            %pause(.05)
+            
+            fprintf('it,t=%d,%f\n',iStep,t)
+         end
+         clearvars state1
+      otherwise
+         error('Higher Order schemes not yet implemented!')
+   end
+
 end
 cputime = toc;
-
-% for iStep = 1:Parameters.nStep
-%
-%    for iStage = 1:Parameters.nStage
-%       % Set boundary conditions
-%       state_VG = set_cell_boundary(state_VG);
-%
-%       % Calculate face value
-%       %faceValue = calc_face_value(faceValue,state);
-%       faceValue = faceValue.calc_face_value(state_VG);
-%
-%       % Calculate face flux
-%       faceFlux = faceFlux.calc_face_flux(faceValue);
-%
-%       % Calculate source
-%       source_VG = calc_source(grid,state_VG);
-%
-%       % Calculate time step
-%       dt = calc_timestep(grid,state_VG);
-%       %timestep = calc_timestep(grid,faceValue);
-%
-%       % Update state
-%       state_VG = update_state(grid,state_VG,faceFlux,source_VG,dt);
-%
-%    end
-%
-%    %state_VG(:,3:3,2,2)
-%
-%    state = state.GetState(state_VG);
-%    state.plot('rho',iStep)
-%    pause(.1)
-%
-%    fprintf('iStep=%d\n',iStep)
-%
-% end
-
 disp('advance finished...')
 
 %% Visualization
-
 
 if strcmp(Parameters.IC,'Riemann')
    nI = Parameters.nI;
