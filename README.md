@@ -17,7 +17,9 @@ All the parameters are set in 'Parameters.m'. The initial condition setup needs 
 
 Note that moments instead of velocities are stored in state_GV.
 
-Currently there are bugs for the pressure equation.
+Currently there are bugs for the pressure equation. I don't understand why, but it seems that solving the pressure equation cannot get the correct answer for fluid shocks and density waves?
+
+Also, there are unknown issues causing worse accuracy compared with BATS-R-US.
 
 ### Prerequisites
 

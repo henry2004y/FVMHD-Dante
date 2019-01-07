@@ -35,7 +35,8 @@ classdef State %< handle
          
          % Set initial conditions
          switch Parameters.IC
-            case {'density wave','contact discontinuity','shocktube'}
+            case {'density wave','contact discontinuity','shocktube',...
+                  'square wave'}
                [density,velocity,Bfield,pressure] = obj.set_init;
             case 'Riemann'
                [density,velocity,Bfield,pressure,tEnd] = ...
@@ -79,6 +80,10 @@ classdef State %< handle
             case 'density wave'
                density(nI/2:nI/2,:,:) = 2.0;
                velocity(:,:,:,1) = 1.0;
+            case 'square wave'
+               density(nI/2-10:nI/2,:,:) = 2.0;
+               velocity(:,:,:,1) = 1.0;
+               pressure(:) = 0.01;
             case 'shocktube'
                
             otherwise
@@ -403,7 +408,7 @@ classdef State %< handle
          var = var(iMin:iMax,jMin:jMax,kMin:kMax); % Remove ghost cells
          
          figure(2)
-         plot(x,var,'LineWidth',1.5)
+         plot(x,var,'-*','LineWidth',1.5)
          
          title(sprintf('iStep=%d',iStep))
          legend(varname)
