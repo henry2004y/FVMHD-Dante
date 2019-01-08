@@ -8,7 +8,7 @@ classdef Parameters
    
    properties (Constant)
       GridType   char = 'Cartesian'
-      GridSize   double {mustBeInteger} = [4,1,1]
+      GridSize   double {mustBeInteger} = [100,1,1]
       nI         double {mustBeInteger} = Parameters.GridSize(1)
       nJ         double {mustBeInteger} = Parameters.GridSize(2)
       nK         double {mustBeInteger} = Parameters.GridSize(3)
@@ -35,7 +35,7 @@ classdef Parameters
       
       Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'Rusanov'
       Order      double {mustBeMember(Order,[1,2])} = 1
-      CFL        double = 0.8
+      CFL        double = 0.9
       limiter    char = 'MM'
       TimeAccurate logical = true
       UseConservative logical = false
@@ -59,8 +59,10 @@ classdef Parameters
       RiemannProblemType double {mustBeInteger} = 1;
       
       DoAdvanceTime logical = false
-      nStep      double {mustBeInteger} = 10
-      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 1.0
+      nStep      double {mustBeInteger} = 20
+      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 0.1
+      
+      PlotVar    char = 'rho'
    end
    
 end
