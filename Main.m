@@ -25,7 +25,7 @@ grid = Grid;
 % Init variables and arrays
 state = State(false,grid);
 state = state.SetState;
-state.plot('rho',grid,0)
+state.plot(Parameters.PlotVar,grid,0)
 
 boundary  = Boundary;
 faceValue = FaceValue;
@@ -59,7 +59,7 @@ if Parameters.DoAdvanceTime % Advance with time
             source.calc_source(grid,state);
             
             % Calculate time step
-            time.calc_timestep(grid,state);
+            time.calc_timestep(grid,faceFlux);
             
             if t + time.dt > tEnd; time.dt = tEnd - t; end
             
@@ -70,14 +70,14 @@ if Parameters.DoAdvanceTime % Advance with time
             it = it + 1;
             
             state = state.GetState;
-            state.plot('rho',grid,it)
+            state.plot(Parameters.PlotVar,grid,it)
             %pause(.05)
             
             fprintf('it,t=%d,%f\n',it,t)
          end
          
       case 2 % 2nd order method
-         while t < tEnd 
+         while t < tEnd
             % 1st stage of modified timestepping
             
             % Set boundary conditions
@@ -93,7 +93,7 @@ if Parameters.DoAdvanceTime % Advance with time
             source.calc_source(grid,state);
             
             % Calculate time step
-            time.calc_timestep(grid,state);
+            time.calc_timestep(grid,faceFlux);
             
             % Update state in the 1st stage
             time.dt = 0.5*time.dt;
@@ -124,7 +124,7 @@ if Parameters.DoAdvanceTime % Advance with time
             it = it + 1;
             
             state = state.GetState;
-            state.plot('rho',grid,it)
+            state.plot(Parameters.PlotVar,grid,it)
             %pause(.05)
             
             fprintf('it,t=%d,%f\n',it,t)
@@ -150,9 +150,7 @@ else % Advance with steps
             source.calc_source(grid,state);
             
             % Calculate time step
-            time.calc_timestep(grid,state);
-            
-            if t + time.dt > tEnd; time.dt = tEnd - t; end
+            time.calc_timestep(grid,faceFlux);
             
             % Update state
             state = state.update_state(grid,faceFlux,source,time);
@@ -160,14 +158,14 @@ else % Advance with steps
             t  = t + time.dt;
             
             state = state.GetState;
-            state.plot('rho',grid,iStep)
+            state.plot(Parameters.PlotVar,grid,iStep)
             %pause(.05)
             
             fprintf('it,t=%d,%f\n',iStep,t)
          end
          
       case 2 % 2nd order method
-         for iStep = 1:Parameters.nStep 
+         for iStep = 1:Parameters.nStep
             % 1st stage of modified timestepping
             
             % Set boundary conditions
@@ -183,7 +181,7 @@ else % Advance with steps
             source.calc_source(grid,state);
             
             % Calculate time step
-            time.calc_timestep(grid,state);
+            time.calc_timestep(grid,faceFlux);
             
             % Update state in the 1st stage
             time.dt = 0.5*time.dt;
@@ -208,12 +206,10 @@ else % Advance with steps
             time.dt = 2*time.dt;
             state = state.update_state(grid,faceFlux,source,time);
             
-            if t + time.dt > tEnd; time.dt = tEnd - t; end
-            
             t = t + time.dt;
             
             state = state.GetState;
-            state.plot('rho',grid,iStep)
+            state.plot(Parameters.PlotVar,grid,iStep)
             %pause(.05)
             
             fprintf('it,t=%d,%f\n',iStep,t)
@@ -222,7 +218,7 @@ else % Advance with steps
       otherwise
          error('Higher Order schemes not yet implemented!')
    end
-
+   
 end
 cputime = toc;
 disp('advance finished...')
@@ -234,10 +230,17 @@ if strcmp(Parameters.IC,'Riemann')
    
    % Exact solution
    [xe,re,ue,pe,ee,te,Me,se] = ...
-      EulerExact(1,0,1, 0.125,0,0.1,0.1, 3);
+      EulerExact(1,0,1, 0.125,0,0.1,t, 3);
    Ee = pe./((Const.gamma-1)*re)+0.5*ue.^2;
    
    figure(2); hold on
    x = grid.getX;
-   plot(xe,re,'--')
+   switch Parameters.PlotVar
+      case 'rho'
+         plot(xe,re,'--')
+      case 'p'
+         plot(xe,pe,'--')
+      case 'ux'
+         plot(xe,ue,'--')
+   end
 end
