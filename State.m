@@ -12,12 +12,13 @@ classdef State %< handle
    
    %======================== MEMBERS =================================
    properties
-      Rho(:,:,:)  double {mustBeReal, mustBeGreaterThan(Rho, 0)}
-      U(:,:,:,3)  double {mustBeReal}
-      B(:,:,:,3)  double {mustBeReal}
-      P(:,:,:)    double {mustBeReal, mustBeGreaterThan(P, 0)}
+      Rho(:,:,:)  %double {mustBeReal, mustBeGreaterThan(Rho, 0)}
+      U(:,:,:,3)  %double {mustBeReal}
+      B(:,:,:,3)  %double {mustBeReal}
+      P(:,:,:)    %double {mustBeReal, mustBeGreaterThan(P, 0)}
       
-      state_GV(:,:,:,:) double
+      %state_GV(:,:,:,:) {typeCheck}? %double
+      state_GV(:,:,:,:)
    end
    
    properties (Dependent)
@@ -44,7 +45,7 @@ classdef State %< handle
             otherwise
                error('unknown initial condition!')
          end
-               
+         
          if nargin == 0
             disp('Using default grid')
             obj.Rho = ones(GridGen.GridSize);
@@ -65,10 +66,17 @@ classdef State %< handle
          %SET_INIT Initialization of state variables.
          %
          
-         density  = ones(Parameters.FullSize);
-         velocity = zeros([Parameters.FullSize,3]);
-         Bfield   = zeros([Parameters.FullSize,3]);
-         pressure = ones(Parameters.FullSize);
+         if Parameters.UseGPU
+            density  = ones(Parameters.FullSize,'gpuArray');
+            velocity = zeros([Parameters.FullSize,3],'gpuArray');
+            Bfield   = zeros([Parameters.FullSize,3],'gpuArray');
+            pressure = ones(Parameters.FullSize,'gpuArray');
+         else
+            density  = ones(Parameters.FullSize);
+            velocity = zeros([Parameters.FullSize,3]);
+            Bfield   = zeros([Parameters.FullSize,3]);
+            pressure = ones(Parameters.FullSize);
+         end
          
          nI = Parameters.nI;
          
@@ -252,13 +260,18 @@ classdef State %< handle
       function obj = SetState(obj)
          % Reorganize data structure.
          
-         obj.state_GV = Inf([Parameters.FullSize,Parameters.nVar]);
+         if Parameters.UseGPU
+            obj.state_GV = Inf([Parameters.FullSize,Parameters.nVar],...
+               'gpuArray');
+         else
+            obj.state_GV = Inf([Parameters.FullSize,Parameters.nVar]);
+         end
          
          obj.state_GV(:,:,:,Parameters.Rho_) = obj.Rho;
          obj.state_GV(:,:,:,Parameters.U_)   = obj.U .*...
             obj.state_GV(:,:,:,Parameters.Rho_);
          obj.state_GV(:,:,:,Parameters.B_) = obj.B;
-         obj.state_GV(:,:,:,Parameters.P_) = obj.P;       
+         obj.state_GV(:,:,:,Parameters.P_) = obj.P;
       end
       
       function obj = GetState(obj)
@@ -330,12 +343,7 @@ classdef State %< handle
                   (Flux_ZV(:,:,2:end,:) - Flux_ZV(:,:,1:end-1,:))/...
                   CellSize_D(3) -...
                   source_GV);
-               
-%                 
-%                  state_GV(52,2,2,8) - dt.*(...
-%                    (Flux_XV(52,1,1,8) - Flux_XV(51,1,1,8))/CellSize_D(1) -...
-%                    source_GV(51,1,1,8))
-                
+
                
             else
                stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_:Bz_) = ...
