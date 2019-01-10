@@ -19,6 +19,11 @@ disp('Simulation starts...')
 %printParameters
 details(Parameters)
 
+if Parameters.UseGPU
+   numDevices = gpuDeviceCount
+   origDevice = gpuDevice
+end
+
 % Init grid
 grid = Grid;
 
@@ -70,8 +75,9 @@ if Parameters.DoAdvanceTime % Advance with time
             it = it + 1;
             
             state = state.GetState;
-            state.plot(Parameters.PlotVar,grid,it)
-            %pause(.05)
+            if mod(it,Parameters.PlotInterval) == 0
+               state.plot(Parameters.PlotVar,grid,it)
+            end
             
             fprintf('it,t=%d,%f\n',it,t)
          end
@@ -124,8 +130,9 @@ if Parameters.DoAdvanceTime % Advance with time
             it = it + 1;
             
             state = state.GetState;
-            state.plot(Parameters.PlotVar,grid,it)
-            %pause(.05)
+            if mod(it,Parameters.PlotInterval) == 0
+               state.plot(Parameters.PlotVar,grid,it)
+            end
             
             fprintf('it,t=%d,%f\n',it,t)
          end
@@ -158,8 +165,9 @@ else % Advance with steps
             t  = t + time.dt;
             
             state = state.GetState;
-            state.plot(Parameters.PlotVar,grid,iStep)
-            %pause(.05)
+            if mod(iStep,Parameters.PlotInterval) == 0
+               state.plot(Parameters.PlotVar,grid,iStep)
+            end
             
             fprintf('it,t=%d,%f\n',iStep,t)
          end
@@ -209,8 +217,9 @@ else % Advance with steps
             t = t + time.dt;
             
             state = state.GetState;
-            state.plot(Parameters.PlotVar,grid,iStep)
-            %pause(.05)
+            if mod(iStep,Parameters.PlotInterval) == 0
+               state.plot(Parameters.PlotVar,grid,iStep)
+            end
             
             fprintf('it,t=%d,%f\n',iStep,t)
          end

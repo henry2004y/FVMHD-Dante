@@ -4,7 +4,7 @@ classdef Source < handle
    
    %======================== MEMBERS =================================
    properties
-      source_GV(:,:,:,:) double
+      source_GV(:,:,:,:) %double
    end
    
    %======================== METHODS =================================
@@ -43,7 +43,11 @@ classdef Source < handle
          % errors in source terms can build up and lead to negative p.
          %DivU(:) = 0;
          
-         obj.source_GV = Inf([GridSize nVar]);
+         if Parameters.UseGPU
+            obj.source_GV = Inf([GridSize nVar],'gpuArray');
+         else
+            obj.source_GV = Inf([GridSize nVar]);
+         end
          
          obj.source_GV(:,:,:,Rho_) = 0;
          obj.source_GV(:,:,:,U_) = ...

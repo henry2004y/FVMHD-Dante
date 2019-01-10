@@ -4,12 +4,12 @@ classdef FaceValue < handle
    
    %======================== MEMBERS =================================
    properties
-      LState_XV(:,:,:,:)  double {mustBeReal}
-      RState_XV(:,:,:,:)  double {mustBeReal}
-      LState_YV(:,:,:,:)  double {mustBeReal}
-      RState_YV(:,:,:,:)  double {mustBeReal}
-      LState_ZV(:,:,:,:)  double {mustBeReal}
-      RState_ZV(:,:,:,:)  double {mustBeReal}
+      LState_XV(:,:,:,:)  %double {mustBeReal}
+      RState_XV(:,:,:,:)  %double {mustBeReal}
+      LState_YV(:,:,:,:)  %double {mustBeReal}
+      RState_YV(:,:,:,:)  %double {mustBeReal}
+      LState_ZV(:,:,:,:)  %double {mustBeReal}
+      RState_ZV(:,:,:,:)  %double {mustBeReal}
    end
    
    %======================== CONSTRUCTORS ============================
@@ -132,22 +132,22 @@ classdef FaceValue < handle
    methods (Static)
       function m = minmod(a,b,c)
          %MINMOD
-	 % For three inputs, use Harten's generalized definition.
+         % For three inputs, use Harten's generalized definition.
          %OUTPUT:
          % m: zero if opposite sign, otherwise the one of smaller magnitude.
-
+         
          if nargin == 2  % Two input arguments
             m = (sign(a) + sign(b))/2.*min(abs(a),abs(b));
          elseif nargin == 3  % Three input arguments
-	    s = (sign(a) + sign(b) + sign(c))/3;
+            s = (sign(a) + sign(b) + sign(c))/3;
             if abs(s)==1
-	      m = s*min(abs(a),abs(b),abs(c));
-	    else 
-	      m = zeros(size(a));
+               m = s*min(abs(a),abs(b),abs(c));
+            else
+               m = zeros(size(a));
             end
-         end   
+         end
       end
-            
+      
    end
    
 end

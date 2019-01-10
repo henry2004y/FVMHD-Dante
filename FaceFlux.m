@@ -8,12 +8,12 @@ classdef FaceFlux < handle
    
    %======================== MEMBERS =================================
    properties (GetAccess = public, SetAccess = private)
-      Flux_XV(:,:,:,:)  double {mustBeReal}
-      Flux_YV(:,:,:,:)  double {mustBeReal}
-      Flux_ZV(:,:,:,:)  double {mustBeReal}
-      Cmax_XF(:,:,:,:)  double
-      Cmax_YF(:,:,:,:)  double
-      Cmax_ZF(:,:,:,:)  double
+      Flux_XV(:,:,:,:)  %double {mustBeReal}
+      Flux_YV(:,:,:,:)  %double {mustBeReal}
+      Flux_ZV(:,:,:,:)  %double {mustBeReal}
+      Cmax_XF(:,:,:,:)  %double
+      Cmax_YF(:,:,:,:)  %double
+      Cmax_ZF(:,:,:,:)  %double
    end
    
    properties (GetAccess = private, SetAccess = private)
@@ -77,12 +77,21 @@ classdef FaceFlux < handle
          U_   = Parameters.U_;
          B_   = Parameters.B_;
          
-         LFlux_XV = Inf([GridSize+[1 0 0],nVar]);
-         RFlux_XV = Inf([GridSize+[1 0 0],nVar]);
-         LFlux_YV = Inf([GridSize+[0 1 0],nVar]);
-         RFlux_YV = Inf([GridSize+[0 1 0],nVar]);
-         LFlux_ZV = Inf([GridSize+[0 0 1],nVar]);
-         RFlux_ZV = Inf([GridSize+[0 0 1],nVar]);
+         if Parameters.UseGPU
+            LFlux_XV = Inf([GridSize+[1 0 0],nVar],'gpuArray');
+            RFlux_XV = Inf([GridSize+[1 0 0],nVar],'gpuArray');
+            LFlux_YV = Inf([GridSize+[0 1 0],nVar],'gpuArray');
+            RFlux_YV = Inf([GridSize+[0 1 0],nVar],'gpuArray');
+            LFlux_ZV = Inf([GridSize+[0 0 1],nVar],'gpuArray');
+            RFlux_ZV = Inf([GridSize+[0 0 1],nVar],'gpuArray');
+         else
+            LFlux_XV = Inf([GridSize+[1 0 0],nVar]);
+            RFlux_XV = Inf([GridSize+[1 0 0],nVar]);
+            LFlux_YV = Inf([GridSize+[0 1 0],nVar]);
+            RFlux_YV = Inf([GridSize+[0 1 0],nVar]);
+            LFlux_ZV = Inf([GridSize+[0 0 1],nVar]);
+            RFlux_ZV = Inf([GridSize+[0 0 1],nVar]);
+         end
          
          % Density flux
          LFlux_XV(:,:,:,Rho_) = LState_XV(:,:,:,Ux_);
@@ -321,7 +330,7 @@ classdef FaceFlux < handle
                obj.Flux_YV = obj.Flux_YV - ...
                   0.5*obj.Cmax_YF.*(RState_YV - LState_YV);
                obj.Flux_ZV = obj.Flux_ZV - ...
-                  0.5*obj.Cmax_ZF.*(RState_ZV - LState_ZV);               
+                  0.5*obj.Cmax_ZF.*(RState_ZV - LState_ZV);
             else
                % If I solve energy equation instead of pressure, there's
                % duplicate calculation above, even though the expression
