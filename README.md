@@ -15,15 +15,13 @@ Main
 
 All the parameters are set in 'Parameters.m'. The initial condition setup needs to be improved, so that we don't need to modify inside State.m to switch between Riemann problems and custom tests.
 
-Note that moments instead of velocities are stored in state_GV.
+Note that moments instead of velocities are stored in state_GV. I may need to change the index (Ux_,Uy_,Uz_) to (RhoUx_,RhoUy_,RhoUz_) for clarification. Also, there are no DivB control besides the eight-wave scheme.
 
-Currently there are bugs for the pressure equation. I don't understand why, but it seems that solving the pressure equation cannot get the correct answer for fluid shocks and density waves?
-
-Also, there are unknown issues causing worse accuracy compared with BATS-R-US.
+GPU-enabled part is easily implemented in Matlab. For 100000 cells in 1D, this gives roughly 10 times speedup.
 
 ### Prerequisites
 
-MATLAB
+MATLAB, Parallel Computing Toolbox, GPU-enabled driver (if using gpuArray).
 
 ## Authors
 
