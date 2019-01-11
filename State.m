@@ -342,9 +342,7 @@ classdef State %< handle
                   CellSize_D(2) +...
                   (Flux_ZV(:,:,2:end,:) - Flux_ZV(:,:,1:end-1,:))/...
                   CellSize_D(3) -...
-                  source_GV);
-
-               
+                  source_GV);            
             else
                stateNew_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_:Bz_) = ...
                   state_GV(iMin:iMax,jMin:jMax,kMin:kMax,Rho_:Bz_) - ...
@@ -395,6 +393,8 @@ classdef State %< handle
       end
       
       function plot(obj,varargin)
+         
+         obj = obj.GetState;
          
          iMin = Parameters.iMin;
          iMax = Parameters.iMax;
