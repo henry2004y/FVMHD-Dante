@@ -237,12 +237,15 @@ if Parameters.UseGPU, t = gather(t); end
 
 if strcmp(Parameters.IC,'Riemann')
    nI = Parameters.nI;
-   
+   [Rho,U,~,P,tEnd,~] = state.set_init_Riemann(grid);
    % Exact solution
    [xe,re,ue,pe,ee,te,Me,se] = ...
-      EulerExact(1,0,1, 0.125,0,0.1,t, 3);
+      EulerExact(Rho(1),U(1),P(1), ...
+      Rho(end),U(end,1,1,1),P(end),t, 3);
+   
    Ee = pe./((Const.gamma-1)*re)+0.5*ue.^2;
    
+   clearvars Rho U B P CFL
    figure(2); hold on
    x = grid.getX;
    switch Parameters.PlotVar
