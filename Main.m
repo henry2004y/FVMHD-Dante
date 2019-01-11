@@ -74,7 +74,6 @@ if Parameters.DoAdvanceTime % Advance with time
             t  = t + time.dt;
             it = it + 1;
             
-            state = state.GetState;
             if mod(it,Parameters.PlotInterval) == 0
                state.plot(Parameters.PlotVar,grid,it)
             end
@@ -129,7 +128,6 @@ if Parameters.DoAdvanceTime % Advance with time
             t = t + time.dt;
             it = it + 1;
             
-            state = state.GetState;
             if mod(it,Parameters.PlotInterval) == 0
                state.plot(Parameters.PlotVar,grid,it)
             end
@@ -140,6 +138,8 @@ if Parameters.DoAdvanceTime % Advance with time
       otherwise
          error('Higher Order schemes not yet implemented!')
    end
+   state.plot(Parameters.PlotVar,grid,it)
+   
 else % Advance with steps
    switch Parameters.Order
       case 1 % 1st order method
@@ -164,7 +164,6 @@ else % Advance with steps
             
             t  = t + time.dt;
             
-            state = state.GetState;
             if mod(iStep,Parameters.PlotInterval) == 0
                state.plot(Parameters.PlotVar,grid,iStep)
             end
@@ -216,7 +215,6 @@ else % Advance with steps
             
             t = t + time.dt;
             
-            state = state.GetState;
             if mod(iStep,Parameters.PlotInterval) == 0
                state.plot(Parameters.PlotVar,grid,iStep)
             end
@@ -228,11 +226,14 @@ else % Advance with steps
          error('Higher Order schemes not yet implemented!')
    end
    
+   state.plot(Parameters.PlotVar,grid,iStep)
 end
 cputime = toc;
 disp('advance finished...')
 
 %% Visualization
+
+if Parameters.UseGPU, t = gather(t); end
 
 if strcmp(Parameters.IC,'Riemann')
    nI = Parameters.nI;
