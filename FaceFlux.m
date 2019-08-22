@@ -62,6 +62,7 @@ classdef FaceFlux < handle
          
          if strcmp(Parameters.Scheme,'Rusanov')
             obj = obj.get_physical_flux(faceValue);
+            % In BATSRUS, numerical flux is included in physical flux.
             obj = obj.add_numerical_flux(faceValue);
          elseif strcmp(Parameters.Scheme,'HLLE')
             obj = obj.get_HLLE_flux(faceValue);
@@ -327,7 +328,7 @@ classdef FaceFlux < handle
          
          if strcmp(Parameters.Scheme,'Rusanov')
             [obj.Cmax_XF,obj.Cmax_YF,obj.Cmax_ZF] = ...
-               obj.get_speed_max(faceValue);
+               obj.get_speed_max(faceValue);            
             
             if ~Parameters.UseConservative
                obj.Flux_XV = obj.Flux_XV - ...
@@ -367,6 +368,7 @@ classdef FaceFlux < handle
                   obj.Flux_YV(:,:,:,Rho_:Bz_) - ...
                   0.5*obj.Cmax_YF.*(RState_YV(:,:,:,Rho_:Bz_) - ...
                   LState_YV(:,:,:,Rho_:Bz_));
+               
                obj.Flux_YV(:,:,:,E_) = obj.Flux_YV(:,:,:,E_) - ...
                   0.5*obj.Cmax_YF.* (...
                   (RState_YV(:,:,:,P_) / (gamma-1) + ...
