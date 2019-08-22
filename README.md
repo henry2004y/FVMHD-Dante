@@ -19,6 +19,8 @@ Note that moments instead of velocities are stored in state_GV. I may need to ch
 
 GPU-enabled part is easily implemented in Matlab. For 100000 cells in 1D, this gives roughly 10 times speedup.
 
+This code has been completely rewritten in Julia at [DanteJulia](https://github.com/henry2004y/DanteJulia). Future versions will be maintained there.
+
 ### Prerequisites
 
 MATLAB, Parallel Computing Toolbox, GPU-enabled driver (if using gpuArray).
