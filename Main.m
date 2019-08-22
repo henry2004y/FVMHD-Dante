@@ -73,7 +73,7 @@ if Parameters.DoAdvanceTime % Advance with time
             
             t  = t + time.dt;
             it = it + 1;
-            
+                        
             if mod(it,Parameters.PlotInterval) == 0
                state.plot(Parameters.PlotVar,grid,it)
             end
@@ -104,7 +104,6 @@ if Parameters.DoAdvanceTime % Advance with time
             time.dt = 0.5*time.dt;
             state1 = state.update_state(grid,faceFlux,source,time);
             
-            
             % 2nd stage of modified timestepping
             
             % Set boundary conditions
@@ -118,7 +117,7 @@ if Parameters.DoAdvanceTime % Advance with time
             
             % Calculate source
             source.calc_source(grid,state1);
-            
+                        
             % Update state
             time.dt = 2*time.dt;
             state = state.update_state(grid,faceFlux,source,time);
