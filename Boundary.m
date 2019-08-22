@@ -66,7 +66,7 @@ classdef Boundary < handle
                state_GV(iMin:iMax,jMin:jMax,kMax+1:kMaxAll,:) = ...
                   state_GV(iMin:iMax,jMin:jMax,kMin:kMin+nG-1,:);
             case 'float'
-               % There might be some minor problem in implementing high order
+               % There might be some minor problems in implementing high order
                % float boundary condition.
                state_GV(1:nG,jMin:jMax,kMin:kMax,:) = ...
                   repmat(state_GV(iMin,jMin:jMax,kMin:kMax,:),[nG 1 1 1]);
