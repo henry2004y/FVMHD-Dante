@@ -90,7 +90,7 @@ classdef FaceValue < handle
                      state_GV(iMin-2:iMax  ,jMin:jMax,kMin:kMax,:);
                   
                   dq_X = obj.minmod(dqR_X,dqL_X);
-                  
+                                    
                   dqR_Y = ...
                      state_GV(iMin:iMax,jMin  :jMax+2,kMin:kMax,:) -...
                      state_GV(iMin:iMax,jMin-1:jMax+1,kMin:kMax,:);
@@ -109,7 +109,7 @@ classdef FaceValue < handle
                   
                   dq_Z = obj.minmod(dqR_Z,dqL_Z);
             end
-            
+                        
             % Linear interpolation onto edge centers
             obj.LState_XV = state_GV(iMin-1:iMax,jMin:jMax,kMin:kMax,:)+...
                0.5*dq_X(1:end-1,:,:,:);
