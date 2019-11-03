@@ -90,7 +90,7 @@ classdef FaceValue < handle
                      state_GV(iMin-2:iMax  ,jMin:jMax,kMin:kMax,:);
                   
                   dq_X = obj.minmod(dqR_X,dqL_X);
-                                    
+                                                      
                   dqR_Y = ...
                      state_GV(iMin:iMax,jMin  :jMax+2,kMin:kMax,:) -...
                      state_GV(iMin:iMax,jMin-1:jMax+1,kMin:kMax,:);
