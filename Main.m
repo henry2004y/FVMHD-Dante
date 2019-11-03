@@ -121,7 +121,7 @@ if Parameters.DoAdvanceTime % Advance with time
             % Update state
             time.dt = 2*time.dt;
             state = state.update_state(grid,faceFlux,source,time);
-            
+             
             if t + time.dt > tEnd; time.dt = tEnd - t; end
             
             t = t + time.dt;
