@@ -8,11 +8,11 @@ classdef Parameters
    
    properties (Constant)
       GridType   char = 'Cartesian'
-      GridSize   double {mustBeInteger} = [10000,1,1]
+      GridSize   double {mustBeInteger} = [9,1,1]
       nI         double {mustBeInteger} = Parameters.GridSize(1)
       nJ         double {mustBeInteger} = Parameters.GridSize(2)
       nK         double {mustBeInteger} = Parameters.GridSize(3)
-      nG         double {mustBeInteger} = 1
+      nG         double {mustBeInteger} = 2 % be consistent with nOrder!
       xyzMinMax(3,2) double {mustBeReal}= [0 1;0 1; 0 1]
       % Size including ghost cells
       FullSize   double {mustBeInteger} = ...
@@ -34,11 +34,11 @@ classdef Parameters
       
       
       Scheme     char {mustBeMember(Scheme,{'Rusanov','HLLE'})}= 'Rusanov'
-      Order      double {mustBeMember(Order,[1,2])} = 1
+      Order      double {mustBeMember(Order,[1,2])} = 2
       CFL        double = 0.9
       limiter    char = 'MM'
       TimeAccurate logical = true
-      UseConservative logical = false
+      UseConservative logical = true
       nStage     double {mustBeInteger} = Parameters.Order
       nVar       double {mustBeInteger} = 8
       Rho_       = 1
@@ -60,10 +60,10 @@ classdef Parameters
       
       DoAdvanceTime logical = true
       nStep      double {mustBeInteger} = 100
-      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 0.1
+      tEnd       double {mustBeGreaterThan(tEnd, 0)} = 0.05
       
       PlotVar    char = 'rho'
-      PlotInterval double = 1000
+      PlotInterval double = 10
       UseGPU     logical = false
    end
    
