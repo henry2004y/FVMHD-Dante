@@ -65,6 +65,8 @@ classdef FaceFlux < handle
             % In BATSRUS, numerical flux is included in physical flux.
             obj = obj.add_numerical_flux(faceValue);
          elseif strcmp(Parameters.Scheme,'HLLE')
+            % Part of this can be merged with get_physical_flux!
+            % See the implementation in Julia.
             obj = obj.get_HLLE_flux(faceValue);
          end
       end
@@ -395,7 +397,6 @@ classdef FaceFlux < handle
                   sum(LState_ZV(:,:,:,U_).^2,4) + ...
                   0.5*sum(LState_ZV(:,:,:,B_).^2,4)));
             end
-            
          end
       end
       
@@ -646,7 +647,7 @@ classdef FaceFlux < handle
          obj.Flux_XV = 0.5 * (obj.LFlux_XV + obj.RFlux_XV);
          obj.Flux_YV = 0.5 * (obj.LFlux_YV + obj.RFlux_YV);
          obj.Flux_ZV = 0.5 * (obj.LFlux_ZV + obj.RFlux_ZV);
-         
+                  
          %---------------------
          % Add numerical fluxes
          %---------------------
@@ -686,8 +687,7 @@ classdef FaceFlux < handle
             U_   = Parameters.U_;
             B_   = Parameters.B_;
             gamma= Const.gamma;
-            
-            
+             
             obj.Flux_XV(:,:,:,Rho_:Bz_) = obj.Flux_XV(:,:,:,Rho_:Bz_) - ...
                0.5*(smax_XF + smin_XF)./(smax_XF - smin_XF).*...
                (obj.RFlux_XV(:,:,:,Rho_:Bz_) - obj.LFlux_XV(:,:,:,Rho_:Bz_)) + ...
@@ -742,6 +742,7 @@ classdef FaceFlux < handle
                sum(LState_ZV(:,:,:,U_).^2,4) + ...
                0.5*sum(LState_ZV(:,:,:,B_).^2,4)));
          end
+         
       end
       
       function [cmax_XF,cmax_YF,cmax_ZF] = get_speed_max(obj,faceValue)
@@ -853,8 +854,7 @@ classdef FaceFlux < handle
             RS_YV(:,:,:,Bz_).^2 ) ./ RS_YV(:,:,:,Rho_);
          Ca2_RZF = (RS_ZV(:,:,:,Bx_).^2 + RS_ZV(:,:,:,By_).^2 + ...
             RS_ZV(:,:,:,Bz_).^2 ) ./ RS_ZV(:,:,:,Rho_);
-         
-         
+            
          Can2_LXF = LS_XV(:,:,:,Bx_).^2  ./ LS_XV(:,:,:,Rho_);
          Can2_LYF = LS_YV(:,:,:,By_).^2  ./ LS_YV(:,:,:,Rho_);
          Can2_LZF = LS_ZV(:,:,:,Bz_).^2  ./ LS_ZV(:,:,:,Rho_);
@@ -882,6 +882,8 @@ classdef FaceFlux < handle
          c_RZF = sqrt( 0.5*(Cs2_RZF + Ca2_RZF + ...
             sqrt((Cs2_RZF + Ca2_RZF).^2 - 4*Cs2_RZF.*Can2_RZF)) );
          
+         % This part can be improved! Merge with the final part!
+         % See implementation in Julia.
          sLmax_XF = max(0,u_LXF+c_LXF);
          sLmin_XF = min(0,u_LXF-c_LXF);
          sRmax_XF = max(0,u_RXF+c_RXF);
@@ -894,16 +896,14 @@ classdef FaceFlux < handle
          sLmin_ZF = min(0,u_LZF-c_LZF);
          sRmax_ZF = max(0,u_RZF+c_RZF);
          sRmin_ZF = min(0,u_RZF-c_RZF);
-         
+
          smax_XF = max(sLmax_XF,sRmax_XF);
          smin_XF = min(sLmin_XF,sRmin_XF);
          smax_YF = max(sLmax_YF,sRmax_YF);
          smin_YF = min(sLmin_YF,sRmin_YF);
          smax_ZF = max(sLmax_ZF,sRmax_ZF);
          smin_ZF = min(sLmin_ZF,sRmin_ZF);
-         
-      end
-      
+      end      
    end
    
 end
