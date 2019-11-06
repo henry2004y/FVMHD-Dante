@@ -10,7 +10,6 @@ To get started, type
 
 ```
 Main
-
 ```
 
 All the parameters are set in 'Parameters.m'. The initial condition setup needs to be improved, so that we don't need to modify inside State.m to switch between Riemann problems and custom tests.
