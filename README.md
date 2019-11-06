@@ -12,7 +12,7 @@ To get started, type
 Main
 ```
 
-All the parameters are set in [`Parameters.m`](src/Parameters.m). The initial condition setup needs to be improved, so that we don't need to modify inside [`State.m`](src/State.m) to switch between Riemann problems and custom tests.
+All the parameters are set in [`Parameters.m`](Parameters.m). The initial condition setup needs to be improved, so that we don't need to modify inside [`State.m`](State.m) to switch between Riemann problems and custom tests.
 
 Note that moments instead of velocities are stored in state_GV. I may need to change the index (Ux_,Uy_,Uz_) to (RhoUx_,RhoUy_,RhoUz_) for clarification. Also, there are no DivB control besides the eight-wave scheme. General Lagrange multiplier is for sure something to try.
 
