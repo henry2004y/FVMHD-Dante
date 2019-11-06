@@ -12,11 +12,11 @@ To get started, type
 Main
 ```
 
-All the parameters are set in 'Parameters.m'. The initial condition setup needs to be improved, so that we don't need to modify inside State.m to switch between Riemann problems and custom tests.
+All the parameters are set in [`Parameters.m`](src/Parameters.m). The initial condition setup needs to be improved, so that we don't need to modify inside [`State.m`](src/State.m) to switch between Riemann problems and custom tests.
 
-Note that moments instead of velocities are stored in state_GV. I may need to change the index (Ux_,Uy_,Uz_) to (RhoUx_,RhoUy_,RhoUz_) for clarification. Also, there are no DivB control besides the eight-wave scheme.
+Note that moments instead of velocities are stored in state_GV. I may need to change the index (Ux_,Uy_,Uz_) to (RhoUx_,RhoUy_,RhoUz_) for clarification. Also, there are no DivB control besides the eight-wave scheme. General Lagrange multiplier is for sure something to try.
 
-GPU-enabled part is easily implemented in Matlab. For 100000 cells in 1D, this gives roughly 10 times speedup.
+GPU-enabled part is easily implemented in Matlab. For 100,000 cells in 1D, this gives roughly 10 times speedup using GTX1080 compared with 4 core intel i7 6700k.
 
 This code has been completely rewritten in Julia at [DanteJulia](https://github.com/henry2004y/DanteJulia). Future versions will be maintained there.
 
