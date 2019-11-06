@@ -3,7 +3,7 @@ function [x,rho,ux,p,e,t,Mach,entro]=EulerExact(rho1,u1,p1,rho4,u4,p4,tEnd,n)
 % Classical Gas Exact Riemann Solver 
 % Coded by Manuel Diaz, IAM, NTU 03.09.2011.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Riemann Solver for solving shoc-tube problems
+% Riemann Solver for solving shock-tube problems
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % This programs was modified by Manuel Diaz, and is based on the code of 
