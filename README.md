@@ -2,7 +2,7 @@
 3D finite volume ideal MHD solver on structured grid.
 
 **NOTE**
-This code has been completely rewritten in [Julia](https://github.com/henry2004y/Dante). Future versions will be maintained there.
+This code has been completely rewritten in [Julia](https://github.com/henry2004y/Dante.jl). Future versions will be maintained there.
 
 Practice is more important than theory. Dante is a toy 3D finite-volume code for learning. This first version is implemented in MATLAB.
 Some main features of the code include:
